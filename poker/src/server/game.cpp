@@ -217,7 +217,7 @@ bool table_chat(int from_cid, int to_gid, int to_tid, const char *message)
 bool client_snapshot(int from_gid, int from_tid, int to, int sid, const char *message)
 {
 	char buf[MSG_BUFFER_SIZE];
-	snprintf(buf, sizeof(buf), "SNAP Game:%d Table:%d Type:%d %s",
+	snprintf(buf, sizeof(buf), "{\"_id\":\"SNAP\",\"gameId\":%d,\"tableId\":%d,\"type\":%d,\"value\":\"%s\"}",
 		from_gid, from_tid, sid, message);
 	
 	clientcon* toclient = get_client_by_id(to);
