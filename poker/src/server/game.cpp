@@ -572,9 +572,10 @@ bool send_gameinfo(clientcon *client, int gid)
 	snprintf(msg, sizeof(msg),
 		"GAMEINFO Game Id:%d Game State:%d Type:%d Mode:%d Flags:%d PlayerMax:%d PlayerCount:%d PlayerTimeout:%d PlayerStakes:%d BlindsStart:%d BindsFactor:%d BlindsTime:%d Name:\"%s\"",
 		gid,
+        state,
 		(int) GameTypeHoldem,
 		game_mode,
-		state,
+
 		(g->isPlayer(client->id) ? GameInfoRegistered : 0) |
 			(g->hasPassword() ? GameInfoPassword : 0) |
 			(g->getOwner() == client->id ? GameInfoOwner : 0) |
