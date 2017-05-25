@@ -943,11 +943,12 @@ void GameController::stateBetting(Table *t)
 		sendTableSnapshot(t);
 	}
 	
-#if 0
+#if 1
 	// tell player it's his turn
 	p = t->seats[t->cur_player].player;
 	if (!t->nomoreaction && p->stake > 0)
-		snap(p->client_id, t->table_id, SnapPlayerCurrent);
+        snprintf(msg, sizeof(msg), "your turn");
+		snap(p->client_id, t->table_id, SnapPlayerCurrent, msg);
 #endif
 }
 
