@@ -693,9 +693,12 @@ void GameController::stateBlinds(Table *t)
 	
 #if 1
 	// tell player 'under the gun' it's his turn
+    // re-initialize the player's timeout
+    t->timeout_start = time(NULL);
+
 	Player *p = t->seats[t->cur_player].player;
     snprintf(msg, sizeof(msg),
-              "Your turn! Check %d Call:%d Raise %d Fold:%d Bet%d",
+              "Your turn! Check:%d Call:%d Raise:%d Fold:%d Bet:%d",
               isAllowedAction(t, Player::PlayerAction::Check),
               isAllowedAction(t, Player::PlayerAction::Call),
               isAllowedAction(t, Player::PlayerAction::Raise),
@@ -832,7 +835,9 @@ void GameController::stateBetting(Table *t)
 		if (p->sitout || (unsigned int)difftime(time(NULL), t->timeout_start) > timeout)
 		{
 			// let player sit out (if not already sitting out)
+            #ifdef ALLOW_AUTO_SITOUT
 			p->sitout = true;
+            #endif
 			
 			// auto-action: fold, or check if possible
 			if (t->seats[t->cur_player].bet < t->bet_amount)
@@ -1028,12 +1033,15 @@ void GameController::stateBetting(Table *t)
 	
 #if 1
 	// tell player it's his turn
+    // re-initialize the player's timeout
+    t->timeout_start = time(NULL);
+
 	p = t->seats[t->cur_player].player;
 	if (!t->nomoreaction && p->stake > 0)
     {
         
         snprintf(msg, sizeof(msg),
-                 "Your turn! Check %d Call:%d Raise %d Fold:%d Bet%d",
+                 "Your turn! Check:%d Call:%d Raise:%d Fold:%d Bet:%d",
                  isAllowedAction(t, Player::PlayerAction::Check),
                  isAllowedAction(t, Player::PlayerAction::Call),
                  isAllowedAction(t, Player::PlayerAction::Raise),
