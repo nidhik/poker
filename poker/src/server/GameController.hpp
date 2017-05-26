@@ -151,6 +151,8 @@ protected:
 	
 	void sendTableSnapshot(Table *t);
 	void sendPlayerShowSnapshot(Table *t, Player *p);
+    
+    bool isAllowedAction(Table *t, Player::PlayerAction action);
 	
 private:
 	int game_id;
