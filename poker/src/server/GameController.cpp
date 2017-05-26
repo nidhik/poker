@@ -561,7 +561,6 @@ void GameController::stateNewRound(Table *t)
 }
 
 bool GameController::isAllowedAction(Table *t, Player::PlayerAction action) {
-    chips_type minimum_bet = determineMinimumBet(t);
     
     if (action == Player::Fold)
         return true;
@@ -695,7 +694,13 @@ void GameController::stateBlinds(Table *t)
 #if 1
 	// tell player 'under the gun' it's his turn
 	Player *p = t->seats[t->cur_player].player;
-    snprintf(msg, sizeof(msg), "your turn");
+    snprintf(msg, sizeof(msg),
+              "Your turn! Check %d Call:%d Raise %d Fold:%d Bet%d",
+              isAllowedAction(t, Player::PlayerAction::Check),
+              isAllowedAction(t, Player::PlayerAction::Call),
+              isAllowedAction(t, Player::PlayerAction::Raise),
+              isAllowedAction(t, Player::PlayerAction::Fold),
+              isAllowedAction(t, Player::PlayerAction::Bet));
 	snap(p->client_id, t->table_id, SnapPlayerCurrent, msg);
 #endif
 	
@@ -1025,8 +1030,19 @@ void GameController::stateBetting(Table *t)
 	// tell player it's his turn
 	p = t->seats[t->cur_player].player;
 	if (!t->nomoreaction && p->stake > 0)
-        snprintf(msg, sizeof(msg), "your turn");
-		snap(p->client_id, t->table_id, SnapPlayerCurrent, msg);
+    {
+        
+        snprintf(msg, sizeof(msg),
+                 "Your turn! Check %d Call:%d Raise %d Fold:%d Bet%d",
+                 isAllowedAction(t, Player::PlayerAction::Check),
+                 isAllowedAction(t, Player::PlayerAction::Call),
+                 isAllowedAction(t, Player::PlayerAction::Raise),
+                 isAllowedAction(t, Player::PlayerAction::Fold),
+                 isAllowedAction(t, Player::PlayerAction::Bet));
+        
+        snap(p->client_id, t->table_id, SnapPlayerCurrent, msg);
+    }
+    
 #endif
 }
 
