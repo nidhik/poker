@@ -566,7 +566,6 @@ bool GameController::isAllowedAction(Table *t, Player::PlayerAction action) {
         return true;
     else if (action == Player::Check)
     {
-        // allowed to check?
         if (t->seats[t->cur_player].bet < t->bet_amount)
             return false;
         else
@@ -576,32 +575,17 @@ bool GameController::isAllowedAction(Table *t, Player::PlayerAction action) {
     {
         if (t->bet_amount == 0 || t->bet_amount == t->seats[t->cur_player].bet)
         {
-//            //chat(p->client_id, t->table_id, "You cannot call, nothing was bet! Try check.");
-//            
-//            // retry with this action
-//            p->next_action.action = Player::Check;
             return false;
         }
-//        else if (t->bet_amount > t->seats[t->cur_player].bet + p->stake)
-//        {
-//            // simply convert this action to allin
-//            p->next_action.action = Player::Allin;
-//            return false;
-//        }
         else
         {
-            return true;        }
+            return true;
+        }
     }
     else if (action == Player::Bet)
     {
         if (t->bet_amount > 0)
             return false;
-//        else if (p->next_action.amount < minimum_bet)
-//        {
-//            snprintf(msg, sizeof(msg), "You cannot bet this amount. Minimum bet is %d.",
-//                     minimum_bet);
-//            chat(p->client_id, t->table_id, msg);
-//        }
         else
         {
             return true;
@@ -611,18 +595,8 @@ bool GameController::isAllowedAction(Table *t, Player::PlayerAction action) {
     {
         if (t->bet_amount == 0)
         {
-//            //chat(p->client_id, t->table_id, "Err: You cannot raise, nothing was bet! Try bet.");
-//            
-//            // retry with this action
-//            p->next_action.action = Player::Bet;
             return false;
         }
-//        else if (p->next_action.amount < minimum_bet)
-//        {
-//            snprintf(msg, sizeof(msg), "You cannot raise this amount. Minimum bet is %d.",
-//                     minimum_bet);
-//            chat(p->client_id, t->table_id, msg);
-//        }
         else
         {
             return true;
@@ -695,15 +669,17 @@ void GameController::stateBlinds(Table *t)
 	// tell player 'under the gun' it's his turn
     // re-initialize the player's timeout
     t->timeout_start = time(NULL);
+    chips_type minimum_bet = determineMinimumBet(t);
 
 	Player *p = t->seats[t->cur_player].player;
     snprintf(msg, sizeof(msg),
-              "Your turn! Check:%d Call:%d Raise:%d Fold:%d Bet:%d",
+              "Your turn! Check:%d Call:%d Raise:%d Fold:%d Bet:%d MinBet:%d",
               isAllowedAction(t, Player::PlayerAction::Check),
               isAllowedAction(t, Player::PlayerAction::Call),
               isAllowedAction(t, Player::PlayerAction::Raise),
               isAllowedAction(t, Player::PlayerAction::Fold),
-              isAllowedAction(t, Player::PlayerAction::Bet));
+              isAllowedAction(t, Player::PlayerAction::Bet),
+             minimum_bet);
 	snap(p->client_id, t->table_id, SnapPlayerCurrent, msg);
 #endif
 	
@@ -1041,12 +1017,13 @@ void GameController::stateBetting(Table *t)
     {
         
         snprintf(msg, sizeof(msg),
-                 "Your turn! Check:%d Call:%d Raise:%d Fold:%d Bet:%d",
+                 "Your turn! Check:%d Call:%d Raise:%d Fold:%d Bet:%d MinBet:%d",
                  isAllowedAction(t, Player::PlayerAction::Check),
                  isAllowedAction(t, Player::PlayerAction::Call),
                  isAllowedAction(t, Player::PlayerAction::Raise),
                  isAllowedAction(t, Player::PlayerAction::Fold),
-                 isAllowedAction(t, Player::PlayerAction::Bet));
+                 isAllowedAction(t, Player::PlayerAction::Bet),
+                 determineMinimumBet(t));
         
         snap(p->client_id, t->table_id, SnapPlayerCurrent, msg);
     }
