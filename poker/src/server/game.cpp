@@ -135,16 +135,17 @@ bool client_chat(int from, int to, const char *message)
 	
 	if (from == -1)
 	{
-		snprintf(msg, sizeof(msg), "MSG %d %s %s",
+		snprintf(msg, sizeof(msg), "MSG From:%d To:%s Message:%s",
 			from, "foyer", message);
 	}
 	else
 	{
 		clientcon* fromclient = get_client_by_id(from);
 		
-		snprintf(msg, sizeof(msg), "MSG %d \"%s\" %s",
+		snprintf(msg, sizeof(msg), "MSG From:%d Name:\"%s\" To:%d Message:%s",
 			from,
 			(fromclient) ? fromclient->info.name : "???",
+                 to,
 			message);
 	}
 	
@@ -175,7 +176,7 @@ bool client_chat(int from_gid, int from_tid, int to, const char *message)
 {
 	char msg[256];
 	
-	snprintf(msg, sizeof(msg), "MSG %d:%d %s %s",
+	snprintf(msg, sizeof(msg), "GAMEMSG Game:%d Table:%d Type:%s Message:%s",
 		from_gid, from_tid, (from_tid == -1) ? "game" : "table", message);
 	
 	clientcon* toclient = get_client_by_id(to);
@@ -201,7 +202,7 @@ bool table_chat(int from_cid, int to_gid, int to_tid, const char *message)
 	
 	for (unsigned int i=0; i < client_list.size(); i++)
 	{
-		snprintf(msg, sizeof(msg), "MSG %d:%d:%d \"%s\" %s",
+		snprintf(msg, sizeof(msg), "TABLEMSG Game:%d Table:%d From:%d Name:\"%s\" Message:%s",
 			to_gid, to_tid, from_cid,
 			(fromclient) ? fromclient->info.name : "???",
 			message);
