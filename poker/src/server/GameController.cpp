@@ -622,21 +622,21 @@ bool GameController::isAllowedAction(Table *t, Player::PlayerAction action) {
 
 void GameController::stateBlinds(Table *t)
 {
-	// new blinds level?
-	switch ((int) blind.blindrule)
-	{
-	case BlindByTime:
-		if (difftime(time(NULL), blind.last_blinds_time) > blind.blinds_time)
-		{
-			blind.last_blinds_time = time(NULL);
-			blind.amount = (int)(blind.blinds_factor * blind.amount);
-			
-			// send out blinds snapshot
-			snprintf(msg, sizeof(msg), "%d %d %d", SnapGameStateBlinds, blind.amount / 2, blind.amount);
-			snap(t->table_id, SnapGameState, msg);
-		}
-		break;
-	}
+//	// new blinds level?
+//	switch ((int) blind.blindrule)
+//	{
+//	case BlindByTime:
+//		if (difftime(time(NULL), blind.last_blinds_time) > blind.blinds_time)
+//		{
+//			blind.last_blinds_time = time(NULL);
+//			blind.amount = (int)(blind.blinds_factor * blind.amount);
+//			
+//			// send out blinds snapshot
+//			snprintf(msg, sizeof(msg), "%d %d %d", SnapGameStateBlinds, blind.amount / 2, blind.amount);
+//			snap(t->table_id, SnapGameState, msg);
+//		}
+//		break;
+//	}
 	
 	
 	// FIXME: handle non-SNG correctly (ask each player for blinds ...)
