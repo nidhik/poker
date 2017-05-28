@@ -421,20 +421,22 @@ void GameController::dealHole(Table *t)
 			continue;
 		
 		Player *p = t->seats[i].player;
-		
-		HoleCards h;
-		Card c1, c2;
-		t->deck.pop(c1);
-		t->deck.pop(c2);
-		p->holecards.setCards(c1, c2);
-		
-		char card1[3], card2[3];
-		strcpy(card1, c1.getName());
-		strcpy(card2, c2.getName());
-		snprintf(msg, sizeof(msg), "%d %s %s",
-			SnapCardsHole, card1, card2);
-		snap(p->client_id, t->table_id, SnapCards, msg);
-		
+        
+        if (p->hasPostedBlind) {
+            HoleCards h;
+            Card c1, c2;
+            t->deck.pop(c1);
+            t->deck.pop(c2);
+            p->holecards.setCards(c1, c2);
+            
+            char card1[3], card2[3];
+            strcpy(card1, c1.getName());
+            strcpy(card2, c2.getName());
+            snprintf(msg, sizeof(msg), "%d %s %s",
+                     SnapCardsHole, card1, card2);
+            snap(p->client_id, t->table_id, SnapCards, msg);
+
+        }
 		
 		// increase the found-player counter
 		c++;
@@ -684,7 +686,9 @@ void GameController::stateBlinds(Table *t)
 	
 	Player *pSmall = t->seats[t->sb].player;
 	Player *pBig = t->seats[t->bb].player;
-	
+    
+    pBig->hasPostedBlind = true;
+    pSmall->hasPostedBlind = true;
 	
 	// set the player's SB
 	chips_type amount = blind.amount / 2;

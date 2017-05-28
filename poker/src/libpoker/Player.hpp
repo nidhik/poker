@@ -81,6 +81,7 @@ private:
 	
 	bool sitout;     // is player sitting out?
     bool left; // did the player leave the table?
+    bool hasPostedBlind;
 };
 
 
