@@ -781,11 +781,11 @@ int client_cmd_register(clientcon *client, Tokenizer &t)
 		return 1;
 	}
 	
-	if (g->isStarted())
-	{
-		send_err(client, 0 /*FIXME*/, "game has already been started");
-		return 1;
-	}
+//	if (g->isStarted())
+//	{
+//		send_err(client, 0 /*FIXME*/, "game has already been started");
+//		return 1;
+//	}
 	
 	if (g->isPlayer(client->id))
 	{
@@ -927,6 +927,8 @@ int client_cmd_action(clientcon *client, Tokenizer &t)
 		a = Player::Back;
 	else if (action == "reset")
 		a = Player::ResetAction;
+    else if (action == "leave")
+        a = Player::Leave;
 	else
 	{
 		send_err(client, ErrParameters);

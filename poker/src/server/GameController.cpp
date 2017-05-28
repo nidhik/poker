@@ -69,9 +69,9 @@ GameController::GameController()
 bool GameController::addPlayer(int cid)
 {
 	// is the game already started or full?
-	if (started || players.size() == max_players)
+	if (players.size() == max_players)
 		return false;
-	
+    
 	// is the client already a player?
 	if (isPlayer(cid))
 		return false;
@@ -81,6 +81,13 @@ bool GameController::addPlayer(int cid)
 	p->stake = player_stakes;
 	
 	players[cid] = p;
+    
+    if (started && !ended) {
+        Table *t = tables.begin()->second;
+        chooseSeat(t, p);
+        sendTableSnapshot(t);
+    }
+
 	
 	return true;
 }
@@ -213,6 +220,13 @@ bool GameController::setPlayerAction(int cid, Player::PlayerAction action, chips
 		p->sitout = false;
 		return true;
 	}
+    if (action == Player::Leave)   // leaving the game, hand will be folded and then player will be removed
+    {
+        p->next_action.action = Player::Fold;
+        p->next_action.valid = true;
+        p->left = true;
+        return true;
+    }
 	
 	p->next_action.valid = true;
 	p->next_action.action = action;
@@ -280,6 +294,10 @@ void GameController::sendTableSnapshot(Table *t)
 			
 			for (unsigned int i=0; i < cards.size(); i++)
 				shole += cards[i].getName();
+            if (cards.size() == 0) {
+                // could happen if player joins in the game late
+                shole = "-";
+            }
 		}
 		else
 			shole = "-";
@@ -404,20 +422,22 @@ void GameController::dealHole(Table *t)
 			continue;
 		
 		Player *p = t->seats[i].player;
-		
-		HoleCards h;
-		Card c1, c2;
-		t->deck.pop(c1);
-		t->deck.pop(c2);
-		p->holecards.setCards(c1, c2);
-		
-		char card1[3], card2[3];
-		strcpy(card1, c1.getName());
-		strcpy(card2, c2.getName());
-		snprintf(msg, sizeof(msg), "%d %s %s",
-			SnapCardsHole, card1, card2);
-		snap(p->client_id, t->table_id, SnapCards, msg);
-		
+        
+        if (p->hasPostedBlind) {
+            HoleCards h;
+            Card c1, c2;
+            t->deck.pop(c1);
+            t->deck.pop(c2);
+            p->holecards.setCards(c1, c2);
+            
+            char card1[3], card2[3];
+            strcpy(card1, c1.getName());
+            strcpy(card2, c2.getName());
+            snprintf(msg, sizeof(msg), "%d %s %s",
+                     SnapCardsHole, card1, card2);
+            snap(p->client_id, t->table_id, SnapCards, msg);
+
+        }
 		
 		// increase the found-player counter
 		c++;
@@ -471,7 +491,7 @@ void GameController::stateNewRound(Table *t)
 {
 	// count up current hand number
 	hand_no++;
-	
+    
 	snprintf(msg, sizeof(msg), "%d %d", SnapGameStateNewHand, hand_no);
 	snap(t->table_id, SnapGameState, msg);
 	
@@ -612,21 +632,24 @@ bool GameController::isAllowedAction(Table *t, Player::PlayerAction action) {
 
 void GameController::stateBlinds(Table *t)
 {
-	// new blinds level?
-	switch ((int) blind.blindrule)
-	{
-	case BlindByTime:
-		if (difftime(time(NULL), blind.last_blinds_time) > blind.blinds_time)
-		{
-			blind.last_blinds_time = time(NULL);
-			blind.amount = (int)(blind.blinds_factor * blind.amount);
-			
-			// send out blinds snapshot
-			snprintf(msg, sizeof(msg), "%d %d %d", SnapGameStateBlinds, blind.amount / 2, blind.amount);
-			snap(t->table_id, SnapGameState, msg);
-		}
-		break;
-	}
+    if (/* DISABLES CODE for cash game*/ (0)) {
+        // new blinds level?
+        switch ((int) blind.blindrule)
+        {
+            case BlindByTime:
+                if (difftime(time(NULL), blind.last_blinds_time) > blind.blinds_time)
+                {
+                    blind.last_blinds_time = time(NULL);
+                    blind.amount = (int)(blind.blinds_factor * blind.amount);
+                    
+                    // send out blinds snapshot
+                    snprintf(msg, sizeof(msg), "%d %d %d", SnapGameStateBlinds, blind.amount / 2, blind.amount);
+                    snap(t->table_id, SnapGameState, msg);
+                }
+                break;
+        }
+    }
+    
 	
 	
 	// FIXME: handle non-SNG correctly (ask each player for blinds ...)
@@ -636,7 +659,9 @@ void GameController::stateBlinds(Table *t)
 	
 	Player *pSmall = t->seats[t->sb].player;
 	Player *pBig = t->seats[t->bb].player;
-	
+    
+    pBig->hasPostedBlind = true;
+    pSmall->hasPostedBlind = true;
 	
 	// set the player's SB
 	chips_type amount = blind.amount / 2;
@@ -1326,8 +1351,33 @@ void GameController::stateEndRound(Table *t)
 		// mark seat as unused
 		t->seats[seat_num].occupied = false;
 	}
-	
-	
+    
+    // remove any players that left in the last round
+    
+    for (int i = 0; i < max_players; i ++) {
+        // mark seat as unused
+        if (!t->seats[i].occupied) {
+            continue;
+        }
+        
+        if(t->seats[i].player->left) {
+            t->seats[i].occupied = false;
+        }
+        
+    }
+    for (players_type::iterator e = players.begin(); e != players.end();) {
+        Player *p = e->second;
+        if (p->left) {
+            if (owner == p->client_id) {
+                selectNewOwner();
+            }
+            players.erase(e++);
+        } else {
+            e++;
+        }
+        
+    }
+    
 	sendTableSnapshot(t);
 	
 	
@@ -1457,11 +1507,32 @@ void GameController::start()
 	t->scheduleState(Table::NewRound, 5);
 }
 
+void GameController::chooseSeat(Table *t, Player *p) {
+    if (ended) {
+        return;
+    }
+    for (unsigned int i=0; i < max_players; i++)
+    {
+        Table::Seat current = t->seats[i];
+        if (!current.occupied) {
+            Table::Seat seat;
+            memset(&seat, 0, sizeof(Table::Seat));
+            
+            seat.seat_no = i;
+            seat.occupied = true;
+            seat.player = p;
+            t->seats[i] = seat;
+            return;
+        }
+    }
+    
+}
+
 int GameController::tick()
 {
 	if (!started)
 	{
-		if (getPlayerCount() == max_players)  // start game if player count reached
+		if (getPlayerCount() == 2)  // start game if player count reached
 			start();
 		else if (!getPlayerCount() && !getRestart())  // delete game if no players registered
 			return -1;
