@@ -219,6 +219,13 @@ bool GameController::setPlayerAction(int cid, Player::PlayerAction action, chips
 		p->sitout = false;
 		return true;
 	}
+    if (action == Player::Leave)   // leaving the game, hand will be folded and then player will be removed
+    {
+        p->next_action.action = Player::Fold;
+        p->next_action.valid = true;
+        p->left = true;
+        return true;
+    }
 	
 	p->next_action.valid = true;
 	p->next_action.action = action;
@@ -481,6 +488,34 @@ void GameController::stateNewRound(Table *t)
 {
 	// count up current hand number
 	hand_no++;
+    
+    
+    // remove any players that left in the last round
+    
+    for (int i = 0; i < max_players; i ++) {
+        // mark seat as unused
+        if (!t->seats[i].occupied) {
+            continue;
+        }
+        
+        if(t->seats[i].player->left) {
+            t->seats[i].occupied = false;
+        }
+        
+    }
+    for (players_type::iterator e = players.begin(); e != players.end();) {
+        Player *p = e->second;
+        if (p->left) {
+            if (owner == p->client_id) {
+                selectNewOwner();
+            }
+            players.erase(e++);
+        } else {
+            e++;
+        }
+        
+    }
+
 	
 	snprintf(msg, sizeof(msg), "%d %d", SnapGameStateNewHand, hand_no);
 	snap(t->table_id, SnapGameState, msg);
@@ -622,21 +657,24 @@ bool GameController::isAllowedAction(Table *t, Player::PlayerAction action) {
 
 void GameController::stateBlinds(Table *t)
 {
-//	// new blinds level?
-//	switch ((int) blind.blindrule)
-//	{
-//	case BlindByTime:
-//		if (difftime(time(NULL), blind.last_blinds_time) > blind.blinds_time)
-//		{
-//			blind.last_blinds_time = time(NULL);
-//			blind.amount = (int)(blind.blinds_factor * blind.amount);
-//			
-//			// send out blinds snapshot
-//			snprintf(msg, sizeof(msg), "%d %d %d", SnapGameStateBlinds, blind.amount / 2, blind.amount);
-//			snap(t->table_id, SnapGameState, msg);
-//		}
-//		break;
-//	}
+    if (/* DISABLES CODE for cash game*/ (0)) {
+        // new blinds level?
+        switch ((int) blind.blindrule)
+        {
+            case BlindByTime:
+                if (difftime(time(NULL), blind.last_blinds_time) > blind.blinds_time)
+                {
+                    blind.last_blinds_time = time(NULL);
+                    blind.amount = (int)(blind.blinds_factor * blind.amount);
+                    
+                    // send out blinds snapshot
+                    snprintf(msg, sizeof(msg), "%d %d %d", SnapGameStateBlinds, blind.amount / 2, blind.amount);
+                    snap(t->table_id, SnapGameState, msg);
+                }
+                break;
+        }
+    }
+    
 	
 	
 	// FIXME: handle non-SNG correctly (ask each player for blinds ...)

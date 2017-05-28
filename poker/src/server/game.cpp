@@ -927,6 +927,8 @@ int client_cmd_action(clientcon *client, Tokenizer &t)
 		a = Player::Back;
 	else if (action == "reset")
 		a = Player::ResetAction;
+    else if (action == "leave")
+        a = Player::Leave;
 	else
 	{
 		send_err(client, ErrParameters);

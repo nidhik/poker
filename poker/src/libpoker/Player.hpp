@@ -51,7 +51,8 @@ public:
 		Muck,
 		
 		Sitout,
-		Back
+		Back,
+        Leave
 	} PlayerAction;
 	
 	typedef struct {
@@ -79,6 +80,7 @@ private:
 	PlayerAction last_action;
 	
 	bool sitout;     // is player sitting out?
+    bool left; // did the player leave the table?
 };
 
 
