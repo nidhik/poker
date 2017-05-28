@@ -781,11 +781,11 @@ int client_cmd_register(clientcon *client, Tokenizer &t)
 		return 1;
 	}
 	
-	if (g->isStarted())
-	{
-		send_err(client, 0 /*FIXME*/, "game has already been started");
-		return 1;
-	}
+//	if (g->isStarted())
+//	{
+//		send_err(client, 0 /*FIXME*/, "game has already been started");
+//		return 1;
+//	}
 	
 	if (g->isPlayer(client->id))
 	{

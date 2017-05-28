@@ -153,6 +153,7 @@ protected:
 	void sendPlayerShowSnapshot(Table *t, Player *p);
     
     bool isAllowedAction(Table *t, Player::PlayerAction action);
+    void chooseSeat(Table *t, Player *p);
 	
 private:
 	int game_id;

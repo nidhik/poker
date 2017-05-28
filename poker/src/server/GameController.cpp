@@ -69,9 +69,9 @@ GameController::GameController()
 bool GameController::addPlayer(int cid)
 {
 	// is the game already started or full?
-	if (started || players.size() == max_players)
+	if (players.size() == max_players)
 		return false;
-	
+    
 	// is the client already a player?
 	if (isPlayer(cid))
 		return false;
@@ -81,6 +81,12 @@ bool GameController::addPlayer(int cid)
 	p->stake = player_stakes;
 	
 	players[cid] = p;
+    
+    if (started && !ended) {
+        Table *t = tables.begin()->second;
+        chooseSeat(t, p);
+    }
+
 	
 	return true;
 }
@@ -280,6 +286,10 @@ void GameController::sendTableSnapshot(Table *t)
 			
 			for (unsigned int i=0; i < cards.size(); i++)
 				shole += cards[i].getName();
+            if (cards.size() == 0) {
+                // could happen if player joins in the game late
+                shole = "-";
+            }
 		}
 		else
 			shole = "-";
@@ -1457,11 +1467,32 @@ void GameController::start()
 	t->scheduleState(Table::NewRound, 5);
 }
 
+void GameController::chooseSeat(Table *t, Player *p) {
+    if (ended) {
+        return;
+    }
+    for (unsigned int i=0; i < max_players; i++)
+    {
+        Table::Seat current = t->seats[i];
+        if (!current.occupied) {
+            Table::Seat seat;
+            memset(&seat, 0, sizeof(Table::Seat));
+            
+            seat.seat_no = i;
+            seat.occupied = true;
+            seat.player = p;
+            t->seats[i] = seat;
+            return;
+        }
+    }
+    
+}
+
 int GameController::tick()
 {
 	if (!started)
 	{
-		if (getPlayerCount() == max_players)  // start game if player count reached
+		if (getPlayerCount() == 2)  // start game if player count reached
 			start();
 		else if (!getPlayerCount() && !getRestart())  // delete game if no players registered
 			return -1;
