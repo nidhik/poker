@@ -85,6 +85,7 @@ bool GameController::addPlayer(int cid)
     if (started && !ended) {
         Table *t = tables.begin()->second;
         chooseSeat(t, p);
+        sendTableSnapshot(t);
     }
 
 	
@@ -491,34 +492,6 @@ void GameController::stateNewRound(Table *t)
 	// count up current hand number
 	hand_no++;
     
-    
-    // remove any players that left in the last round
-    
-    for (int i = 0; i < max_players; i ++) {
-        // mark seat as unused
-        if (!t->seats[i].occupied) {
-            continue;
-        }
-        
-        if(t->seats[i].player->left) {
-            t->seats[i].occupied = false;
-        }
-        
-    }
-    for (players_type::iterator e = players.begin(); e != players.end();) {
-        Player *p = e->second;
-        if (p->left) {
-            if (owner == p->client_id) {
-                selectNewOwner();
-            }
-            players.erase(e++);
-        } else {
-            e++;
-        }
-        
-    }
-
-	
 	snprintf(msg, sizeof(msg), "%d %d", SnapGameStateNewHand, hand_no);
 	snap(t->table_id, SnapGameState, msg);
 	
@@ -1378,8 +1351,33 @@ void GameController::stateEndRound(Table *t)
 		// mark seat as unused
 		t->seats[seat_num].occupied = false;
 	}
-	
-	
+    
+    // remove any players that left in the last round
+    
+    for (int i = 0; i < max_players; i ++) {
+        // mark seat as unused
+        if (!t->seats[i].occupied) {
+            continue;
+        }
+        
+        if(t->seats[i].player->left) {
+            t->seats[i].occupied = false;
+        }
+        
+    }
+    for (players_type::iterator e = players.begin(); e != players.end();) {
+        Player *p = e->second;
+        if (p->left) {
+            if (owner == p->client_id) {
+                selectNewOwner();
+            }
+            players.erase(e++);
+        } else {
+            e++;
+        }
+        
+    }
+    
 	sendTableSnapshot(t);
 	
 	
