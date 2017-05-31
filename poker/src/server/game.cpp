@@ -1005,7 +1005,7 @@ int client_cmd_create(clientcon *client, Tokenizer &t)
 		10,
 		GameController::SNG,
 		1500,
-        1500,
+        0,
         0,
 		30,
 		20,
@@ -1115,6 +1115,9 @@ int client_cmd_create(clientcon *client, Tokenizer &t)
 		}
 	}
 	
+    if (ginfo.stake && !ginfo.buyIn) {
+        ginfo.buyIn = ginfo.stake;
+    }
     
 	if (!cmderr)
 	{
