@@ -1379,7 +1379,7 @@ void GameController::stateEndRound(Table *t)
     
     // remove any players that left in the last round
     
-    for (int i = 0; i < max_players; i ++) {
+    for (int i = 0; i < 10; i ++) {
         // mark seat as unused
         if (!t->seats[i].occupied) {
             continue;
