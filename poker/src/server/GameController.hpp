@@ -104,7 +104,7 @@ public:
 	bool isStarted() const { return started; };
 	bool isEnded() const { return ended; };
 	
-	bool addPlayer(int cid);
+	bool addPlayer(int cid, int buyIn);
 	bool removePlayer(int cid);
 	bool isPlayer(int cid) const;
 	

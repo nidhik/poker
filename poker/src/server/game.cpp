@@ -769,9 +769,12 @@ int client_cmd_register(clientcon *client, Tokenizer &t)
 	
 	int gid;
 	t >> gid;
+    
+    int buyIn;
+    t >> buyIn;
 	
 	string passwd = "";
-	if (t.count() >=2)
+	if (t.count() >=3)
 		t >> passwd;
 	
 	GameController *g = get_game_by_id(gid);
@@ -781,11 +784,14 @@ int client_cmd_register(clientcon *client, Tokenizer &t)
 		return 1;
 	}
 	
-//	if (g->isStarted())
-//	{
-//		send_err(client, 0 /*FIXME*/, "game has already been started");
-//		return 1;
-//	}
+    if (/* DISABLES CODE for cash game */ (0)) {
+        if (g->isStarted())
+        {
+            send_err(client, 0 /*FIXME*/, "game has already been started");
+            return 1;
+        }
+    }
+	
 	
 	if (g->isPlayer(client->id))
 	{
@@ -817,7 +823,7 @@ int client_cmd_register(clientcon *client, Tokenizer &t)
 		return 1;
 	}
 	
-	if (!g->addPlayer(client->id))
+	if (!g->addPlayer(client->id, buyIn))
 	{
 		send_err(client, 0 /*FIXME*/, "unable to register");
 		return 1;
@@ -985,6 +991,7 @@ int client_cmd_create(clientcon *client, Tokenizer &t)
 		unsigned int max_players;
 		int type;
 		chips_type stake;
+        chips_type buyIn;
 		unsigned int timeout;
 		chips_type blinds_start;
 		float blinds_factor;
@@ -996,6 +1003,7 @@ int client_cmd_create(clientcon *client, Tokenizer &t)
 		10,
 		GameController::SNG,
 		1500,
+        1500,
 		30,
 		20,
 		2.0f,
@@ -1039,6 +1047,13 @@ int client_cmd_create(clientcon *client, Tokenizer &t)
 			if (ginfo.stake < 10 || ginfo.stake > 1000000*100)
 				cmderr = true;
 		}
+        else if (infotype == "buyIn" && havearg)
+        {
+            ginfo.buyIn = Tokenizer::string2int(infoarg);
+            
+            if (ginfo.buyIn < 10 || ginfo.buyIn > 1000000*100)
+                cmderr = true;
+        }
 		else if (infotype == "timeout" && havearg)
 		{
 			ginfo.timeout = Tokenizer::string2int(infoarg);
@@ -1098,7 +1113,7 @@ int client_cmd_create(clientcon *client, Tokenizer &t)
 		g->setPlayerMax(ginfo.max_players);
 		g->setPlayerTimeout(ginfo.timeout);
 		g->setPlayerStakes(ginfo.stake);
-		g->addPlayer(client->id);
+		g->addPlayer(client->id, ginfo.buyIn);
 		g->setOwner(client->id);
 		g->setName(ginfo.name);
 		g->setBlindsStart(ginfo.blinds_start);
@@ -1401,7 +1416,7 @@ int gameloop()
 			if (config.getBool("dbg_stresstest") && i > 10)
 			{
 				for (int j=0; j < config.getInt("dbg_testgame_players"); j++)
-					g->addPlayer(j*1000 + i);
+					g->addPlayer(j*1000 + i, 1500);
 			}
 			
 			games[gid] = g;

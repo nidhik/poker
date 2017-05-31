@@ -66,7 +66,7 @@ GameController::GameController()
 	password = "";
 }
 
-bool GameController::addPlayer(int cid)
+bool GameController::addPlayer(int cid, int buyIn)
 {
 	// is the game already started or full?
 	if (players.size() == max_players)
@@ -78,7 +78,11 @@ bool GameController::addPlayer(int cid)
 	
 	Player *p = new Player;
 	p->client_id = cid;
-	p->stake = player_stakes;
+    
+    if (buyIn < player_stakes) {
+        return false;
+    }
+	p->stake = buyIn;
 	
 	players[cid] = p;
     
