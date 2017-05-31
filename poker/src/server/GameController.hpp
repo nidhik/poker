@@ -84,7 +84,11 @@ public:
 	unsigned int getBlindsTime() const { return blind.blinds_time; };
 	
 	bool setPlayerStakes(chips_type stake);
+    bool setMaxBuyIn(chips_type maxBuyIn);
 	chips_type getPlayerStakes() const { return player_stakes; };
+    chips_type getMaxBuyIn() const { return max_buyIn; };
+    bool isUnlimitedBuyIn() const { return unlimitedBuyIn; };
+    
 	
 	std::string getName() const { return name; };
 	bool setName(const std::string &str) { name = str; return true; }; // FIXME: validate
@@ -164,6 +168,8 @@ private:
 	GameType type;
 	LimitRule limit;
 	chips_type player_stakes;
+    chips_type max_buyIn;
+    bool unlimitedBuyIn;
 	unsigned int timeout;
 	
 	players_type players;

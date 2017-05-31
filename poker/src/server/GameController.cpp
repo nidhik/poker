@@ -82,6 +82,11 @@ bool GameController::addPlayer(int cid, int buyIn)
     if (buyIn < player_stakes) {
         return false;
     }
+    
+    if (!unlimitedBuyIn && buyIn > max_buyIn) {
+        return false;
+    }
+    
 	p->stake = buyIn;
 	
 	players[cid] = p;
@@ -149,6 +154,22 @@ bool GameController::setPlayerMax(unsigned int max)
 	
 	max_players = max;
 	return true;
+}
+
+bool GameController::setMaxBuyIn(chips_type maxBuyIn)
+{
+    if (!maxBuyIn) {
+        unlimitedBuyIn = true;
+        return true;
+    }
+    
+    if (maxBuyIn < player_stakes)
+        return false;
+    
+    max_buyIn = maxBuyIn;
+    unlimitedBuyIn = false;
+    
+    return true;
 }
 
 bool GameController::setPlayerStakes(chips_type stake)

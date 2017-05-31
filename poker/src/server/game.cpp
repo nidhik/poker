@@ -571,7 +571,7 @@ bool send_gameinfo(clientcon *client, int gid)
 		state = GameStateWaiting;
 	
 	snprintf(msg, sizeof(msg),
-		"GAMEINFO Game Id:%d Game State:%d Type:%d Mode:%d Flags:%d PlayerMax:%d PlayerCount:%d PlayerTimeout:%d PlayerStakes:%d BlindsStart:%d BindsFactor:%d BlindsTime:%d Name:\"%s\"",
+		"GAMEINFO Game Id:%d Game State:%d Type:%d Mode:%d Flags:%d PlayerMax:%d PlayerCount:%d PlayerTimeout:%d PlayerStakes:%d MaxBuyIn:%d BlindsStart:%d BindsFactor:%d BlindsTime:%d Name:\"%s\"",
 		gid,
         state,
 		(int) GameTypeHoldem,
@@ -585,6 +585,7 @@ bool send_gameinfo(clientcon *client, int gid)
 		g->getPlayerCount(),
 		g->getPlayerTimeout(),
 		g->getPlayerStakes(),
+        g->getMaxBuyIn(),
 		g->getBlindsStart(),
 		int(g->getBlindsFactor() * 10),
 		g->getBlindsTime(),
@@ -992,6 +993,7 @@ int client_cmd_create(clientcon *client, Tokenizer &t)
 		int type;
 		chips_type stake;
         chips_type buyIn;
+        chips_type maxBuyIn;
 		unsigned int timeout;
 		chips_type blinds_start;
 		float blinds_factor;
@@ -1004,6 +1006,7 @@ int client_cmd_create(clientcon *client, Tokenizer &t)
 		GameController::SNG,
 		1500,
         1500,
+        0,
 		30,
 		20,
 		2.0f,
@@ -1052,6 +1055,13 @@ int client_cmd_create(clientcon *client, Tokenizer &t)
             ginfo.buyIn = Tokenizer::string2int(infoarg);
             
             if (ginfo.buyIn < 10 || ginfo.buyIn > 1000000*100)
+                cmderr = true;
+        }
+        else if (infotype == "maxBuyIn" && havearg)
+        {
+            ginfo.maxBuyIn = Tokenizer::string2int(infoarg);
+            
+            if (ginfo.maxBuyIn < 10 || ginfo.maxBuyIn > 1000000*100)
                 cmderr = true;
         }
 		else if (infotype == "timeout" && havearg)
@@ -1105,6 +1115,7 @@ int client_cmd_create(clientcon *client, Tokenizer &t)
 		}
 	}
 	
+    
 	if (!cmderr)
 	{
 		GameController *g = new GameController();
@@ -1113,6 +1124,7 @@ int client_cmd_create(clientcon *client, Tokenizer &t)
 		g->setPlayerMax(ginfo.max_players);
 		g->setPlayerTimeout(ginfo.timeout);
 		g->setPlayerStakes(ginfo.stake);
+        g->setMaxBuyIn(ginfo.maxBuyIn);
 		g->addPlayer(client->id, ginfo.buyIn);
 		g->setOwner(client->id);
 		g->setName(ginfo.name);
@@ -1412,6 +1424,7 @@ int gameloop()
 			g->setPlayerMax(config.getInt("dbg_testgame_players"));
 			g->setPlayerTimeout(config.getInt("dbg_testgame_timeout"));
 			g->setPlayerStakes(config.getInt("dbg_testgame_stakes"));
+            g->setMaxBuyIn(0); // no max for test game
 			
 			if (config.getBool("dbg_stresstest") && i > 10)
 			{
