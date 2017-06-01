@@ -1351,17 +1351,17 @@ int client_parsebuffer(clientcon *client)
 	return retval;
 }
 
-int client_handle(socktype sock)
+int client_handle(socktype sock, char buf[1024], std::size_t bytes)
 {
-	char buf[1024];
-	int bytes;
-	
-	// return early on client close/error
-	if ((bytes = socket_read(sock, buf, sizeof(buf))) <= 0)
-		return bytes;
-	
-	
-	//log_msg("clientsock", "(%d) DATA len=%d", sock, bytes);
+//	char buf[1024];
+//	int bytes;
+//	
+//	// return early on client close/error
+//	if ((bytes = socket_read(sock, buf, sizeof(buf))) <= 0)
+//		return bytes;
+//	
+//	
+//	//log_msg("clientsock", "(%d) DATA len=%d", sock, bytes);
 	
 	clientcon *client = get_client_by_sock(sock);
 	if (!client)

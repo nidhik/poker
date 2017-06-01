@@ -104,7 +104,7 @@ int gameloop();
 clients_type& get_client_vector();
 bool client_add(socktype sock, sockaddr_in *saddr);
 bool client_remove(socktype sock);
-int client_handle(socktype sock);
+int client_handle(socktype sock, char data_[1024], std::size_t bytes);
 
 // used by GameController.cpp
 bool client_chat(int from_gid, int from_tid, int to, const char *message);
