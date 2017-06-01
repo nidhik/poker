@@ -64,6 +64,27 @@ using namespace std;
 
 ConfigParser config;
 
+class MessageDispatcher : public Dispatcher
+{
+public:
+    virtual int dispatch(socktype fd, const void *buf, size_t count)
+    {
+        return socket_write(fd, buf, count);
+    }
+    
+    bool registerSession(socktype sock, sockaddr_in *saddr) {
+        return client_add(this, sock, saddr);
+    }
+    bool unregisterSession(socktype sock) {
+        return client_remove(sock);
+    }
+    int handleSession(socktype sock, char data_[1024], std::size_t bytes) {
+        return client_handle(sock, data_, bytes);
+    }
+};
+
+MessageDispatcher dispatcher_singelton;
+
 
 class session
 : public std::enable_shared_from_this<session>
@@ -81,8 +102,8 @@ public:
         unsigned int saddrlen = sizeof(saddr);
         memset(&saddr, 0, sizeof(sockaddr_in));
 
+        dispatcher_singelton.registerSession(socket_.native_handle(), &saddr);
         
-        client_add(socket_.native_handle(), &saddr);
         do_read();
     }
     
@@ -104,7 +125,7 @@ private:
                                                 errno = 0;
                                             log_msg("clientsock", "(%d) socket closed (%d: %s)", sender, errno, strerror(errno));
                                             
-                                            client_remove(sender);
+                                            dispatcher_singelton.unregisterSession(sender);
                                             
                                             
                                         }
@@ -116,7 +137,7 @@ private:
                                         // handle the disconnect.
                                         log_msg("clientsock", "(%d) socket disconnected (%d: %s)", sender, 0, strerror(errno));
                                         
-                                        client_remove(sender);
+                                        dispatcher_singelton.unregisterSession(sender);
                                     }
                                 });
     }
@@ -139,6 +160,8 @@ private:
     enum { max_length = 1024 };
     char data_[max_length];
 };
+
+
 
 class server
 {
@@ -168,6 +191,7 @@ private:
     
     tcp::acceptor acceptor_;
     tcp::socket socket_;
+    
 };
 
 

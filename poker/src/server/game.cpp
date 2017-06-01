@@ -90,9 +90,11 @@ clientcon* get_client_by_id(int cid)
 
 int send_msg(socktype sock, const char *message)
 {
-	char buf[MSG_BUFFER_SIZE];
+    clientcon *conn = get_client_by_sock(sock);
+    
+    char buf[MSG_BUFFER_SIZE];
 	const int len = snprintf(buf, sizeof(buf), "%s\r\n", message);
-	const int bytes = socket_write(sock, buf, len);
+	const int bytes = conn->dispatcher->dispatch(sock, buf, len);
 	
 	// FIXME: send remaining bytes if not all have been sent
 	if (len != bytes)
@@ -241,7 +243,7 @@ bool client_snapshot(int to, int sid, const char *message)
 	return true;
 }
 
-bool client_add(socktype sock, sockaddr_in *saddr)
+bool client_add(Dispatcher *dispatcher, socktype sock, sockaddr_in *saddr)
 {
 	// drop client if maximum connection count is reached
 	if (clients.size() == SERVER_CLIENT_HARDLIMIT || clients.size() == (unsigned int) config.getInt("max_clients"))
@@ -280,6 +282,7 @@ bool client_add(socktype sock, sockaddr_in *saddr)
 	client.sock = sock;
 	client.saddr = *saddr;
 	client.id = -1;
+    client.dispatcher = dispatcher;
 	
 	// set initial state
 	client.state |= Connected;
