@@ -64,30 +64,56 @@ using namespace std;
 
 ConfigParser config;
 
-class MessageDispatcher : public Dispatcher
+//------------------------------------------------------------------------------------------------------------------------
+
+
+typedef std::map<socktype, session_ptr> session_map;
+typedef std::pair<socktype, session_ptr> socket_session_pair;
+
+class MessageDispatcher : public Dispatcher,
+public std::enable_shared_from_this<MessageDispatcher>
 {
 public:
     virtual int dispatch(socktype fd, const void *buf, size_t count)
     {
-        return socket_write(fd, buf, count);
+        session_map::const_iterator pos = participants_.find(fd);
+        if (pos == participants_.end()) {
+            return 0;
+        } else {
+            session_ptr session =  pos->second;
+            
+            return session->deliver(buf, count);
+        }
+   
     }
     
-    bool registerSession(socktype sock, sockaddr_in *saddr) {
+    bool registerSession(session_ptr participant, socktype sock, sockaddr_in *saddr) {
+        participants_.insert(socket_session_pair(sock, participant));
         return client_add(this, sock, saddr);
     }
-    bool unregisterSession(socktype sock) {
+    
+    bool unregisterSession(session_ptr participant, socktype sock) {
+        participants_.erase(sock);
         return client_remove(sock);
     }
+    
     int handleSession(socktype sock, char data_[1024], std::size_t bytes) {
         return client_handle(sock, data_, bytes);
     }
+private:
+    session_map participants_;
+    
 };
+
+//------------------------------------------------------------------------------------------------------------------------
 
 MessageDispatcher dispatcher_singelton;
 
+//------------------------------------------------------------------------------------------------------------------------
 
-class session
-: public std::enable_shared_from_this<session>
+class session:
+    public ClientSession,
+    public std::enable_shared_from_this<session>
 {
 public:
     session(tcp::socket socket)
@@ -102,9 +128,14 @@ public:
         unsigned int saddrlen = sizeof(saddr);
         memset(&saddr, 0, sizeof(sockaddr_in));
 
-        dispatcher_singelton.registerSession(socket_.native_handle(), &saddr);
+        dispatcher_singelton.registerSession(shared_from_this(), socket_.native_handle(), &saddr);
         
         do_read();
+    }
+    
+    virtual int deliver(const void *buf, std::size_t bytes) {
+        do_write(buf, bytes);
+        return bytes;
     }
     
 private:
@@ -125,11 +156,11 @@ private:
                                                 errno = 0;
                                             log_msg("clientsock", "(%d) socket closed (%d: %s)", sender, errno, strerror(errno));
                                             
-                                            dispatcher_singelton.unregisterSession(sender);
+                                            dispatcher_singelton.unregisterSession(shared_from_this(), sender);
                                             
                                             
                                         }
-                                        do_write(length);
+                                        do_read();
                                     }
                                     else if ((boost::asio::error::eof == ec) ||
                                         (boost::asio::error::connection_reset == ec))
@@ -137,23 +168,23 @@ private:
                                         // handle the disconnect.
                                         log_msg("clientsock", "(%d) socket disconnected (%d: %s)", sender, 0, strerror(errno));
                                         
-                                        dispatcher_singelton.unregisterSession(sender);
+                                        dispatcher_singelton.unregisterSession(shared_from_this(), sender);
                                     }
                                 });
     }
     
-    void do_write(std::size_t length)
+    void do_write(const void *buf, std::size_t length)
     {
         auto self(shared_from_this());
-        do_read();
-//        boost::asio::async_write(socket_, boost::asio::buffer(data_, length),
-//                                 [this, self](boost::system::error_code ec, std::size_t /*length*/)
-//                                 {
-//                                     if (!ec)
-//                                     {
-//                                         do_read();
-//                                     }
-//                                 });
+       
+        boost::asio::async_write(socket_, boost::asio::buffer(buf, length),
+                                 [this, self](boost::system::error_code ec, std::size_t /*length*/)
+                                 {
+                                     if (!ec)
+                                     {
+                                         log_msg("clientsock", "wrote message");
+                                     }
+                                 });
     }
     
     tcp::socket socket_;
@@ -161,7 +192,7 @@ private:
     char data_[max_length];
 };
 
-
+//------------------------------------------------------------------------------------------------------------------------
 
 class server
 {
@@ -194,6 +225,7 @@ private:
     
 };
 
+//------------------------------------------------------------------------------------------------------------------------
 
 bool config_load()
 {

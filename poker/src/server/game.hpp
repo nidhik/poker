@@ -36,6 +36,18 @@
 
 #include "GameController.hpp"
 
+
+
+class ClientSession
+{
+public:
+    virtual ~ClientSession() {}
+    virtual int deliver(const void *buf, std::size_t bytes) = 0;
+};
+
+
+typedef std::shared_ptr<ClientSession> session_ptr;
+
 class Dispatcher
 {
 public:
