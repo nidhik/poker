@@ -26,12 +26,17 @@
 #include <cstring>
 #include <ctime>
 
-
 #if !defined(PLATFORM_WINDOWS)
 # include <signal.h>
 #endif
 
 #include <vector>
+#include <set>
+#include <deque>
+#include <list>
+#include <string>
+#include <memory>
+#include <utility>
 
 #include "Config.h"
 #include "Platform.h"
@@ -43,27 +48,73 @@
 #include "ConfigParser.hpp"
 #include "game.hpp"
 
+#include <iostream>
+
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/write.hpp>
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <string>
 
-#include <iostream>
-#include <memory>
-#include <utility>
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/bind.hpp>
 
+#include "server_message.hpp"
+
 using namespace boost::asio;
 using namespace boost::asio::ip;
-
-
 using namespace std;
 
 ConfigParser config;
 
+typedef std::deque<server_message> message_queue;
+
+//-------------------------PLAYER---------------------------------------------
+class player
+{
+public:
+    virtual ~player() {}
+    virtual void deliver(const server_message& msg) = 0;
+};
+
+typedef std::shared_ptr<player> player_ptr;
+
+
+
+//-------------------------LOBBY---------------------------------------------
+
+class lobby
+{
+public:
+    void join(player_ptr participant)
+    {
+        participants_.insert(participant);
+        for (auto msg: recent_msgs_)
+            participant->deliver(msg);
+    }
+    
+    void leave(player_ptr participant)
+    {
+        participants_.erase(participant);
+    }
+    
+    void deliver(const server_message& msg)
+    {
+        recent_msgs_.push_back(msg);
+        while (recent_msgs_.size() > max_recent_msgs)
+            recent_msgs_.pop_front();
+        
+        for (auto participant: participants_)
+            participant->deliver(msg);
+    }
+    
+private:
+    std::set<player_ptr> participants_;
+    enum { max_recent_msgs = 100 };
+    message_queue recent_msgs_;
+};
+
+//-------------------------TCP SESSION---------------------------------------------
 
 class session
 : public std::enable_shared_from_this<session>
@@ -140,6 +191,7 @@ private:
     char data_[max_length];
 };
 
+//----------------------------TCP SERVER------------------------------------------
 class server
 {
 public:
@@ -170,6 +222,8 @@ private:
     tcp::socket socket_;
 };
 
+//-------------------------------CONFIG---------------------------------------
+
 
 bool config_load()
 {
@@ -195,7 +249,7 @@ bool config_load()
 	return true;
 }
 
-
+//---------------------------GAME LOOP-------------------------------------------
 
 void scheduleHandleGame(const boost::system::error_code& /*e*/,
            boost::asio::deadline_timer* t)
@@ -206,6 +260,8 @@ void scheduleHandleGame(const boost::system::error_code& /*e*/,
                               boost::asio::placeholders::error, t));
    
 }
+
+//------------------------------MAIN----------------------------------------
 
 int main(int argc, char* argv[])
 {
@@ -241,9 +297,6 @@ int main(int argc, char* argv[])
     }
     
     gameloop();
-    
- 
-   
     
     try
     {

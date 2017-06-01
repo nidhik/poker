@@ -125,6 +125,7 @@
 		028EE8EB1EDFAF86003003A7 /* libboost_chrono-mt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 028EE8751EDFAF86003003A7 /* libboost_chrono-mt.a */; };
 		028EE8EC1EDFAF86003003A7 /* libboost_system-mt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 028EE8761EDFAF86003003A7 /* libboost_system-mt.a */; };
 		028EE8ED1EDFAF86003003A7 /* libboost_exception-mt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 028EE8771EDFAF86003003A7 /* libboost_exception-mt.a */; };
+		02D50E2C1EE0B1D8004381E0 /* server_message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02D50E2A1EE0B1D8004381E0 /* server_message.cpp */; };
 		02F0F20B1EB9A5BF008C6F9C /* Card.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F0F1D81EB9A5BF008C6F9C /* Card.cpp */; };
 		02F0F20C1EB9A5BF008C6F9C /* CommunityCards.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F0F1DB1EB9A5BF008C6F9C /* CommunityCards.cpp */; };
 		02F0F20D1EB9A5BF008C6F9C /* Deck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F0F1DD1EB9A5BF008C6F9C /* Deck.cpp */; };
@@ -274,6 +275,8 @@
 		028EE8751EDFAF86003003A7 /* libboost_chrono-mt.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libboost_chrono-mt.a"; path = "../../../../../usr/local/Cellar/boost/1.60.0_2/lib/libboost_chrono-mt.a"; sourceTree = "<group>"; };
 		028EE8761EDFAF86003003A7 /* libboost_system-mt.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libboost_system-mt.a"; path = "../../../../../usr/local/Cellar/boost/1.60.0_2/lib/libboost_system-mt.a"; sourceTree = "<group>"; };
 		028EE8771EDFAF86003003A7 /* libboost_exception-mt.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libboost_exception-mt.a"; path = "../../../../../usr/local/Cellar/boost/1.60.0_2/lib/libboost_exception-mt.a"; sourceTree = "<group>"; };
+		02D50E2A1EE0B1D8004381E0 /* server_message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = server_message.cpp; sourceTree = "<group>"; };
+		02D50E2B1EE0B1D8004381E0 /* server_message.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = server_message.hpp; sourceTree = "<group>"; };
 		02F0F1C71EB9A5A3008C6F9C /* poker */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = poker; sourceTree = BUILT_PRODUCTS_DIR; };
 		02F0F1D51EB9A5BF008C6F9C /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
 		02F0F1D61EB9A5BF008C6F9C /* Debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Debug.h; sourceTree = "<group>"; };
@@ -679,6 +682,8 @@
 				02F0F1EE1EB9A5BF008C6F9C /* GameController.hpp */,
 				02F0F1EF1EB9A5BF008C6F9C /* pserver.cpp */,
 				02F0F1F01EB9A5BF008C6F9C /* pserver.rc */,
+				02D50E2A1EE0B1D8004381E0 /* server_message.cpp */,
+				02D50E2B1EE0B1D8004381E0 /* server_message.hpp */,
 				02F0F1F11EB9A5BF008C6F9C /* res */,
 				02F0F1F31EB9A5BF008C6F9C /* server_variables.hpp */,
 				02F0F1F41EB9A5BF008C6F9C /* Table.cpp */,
@@ -801,6 +806,7 @@
 				02F0F21A1EB9A5BF008C6F9C /* Tokenizer.cpp in Sources */,
 				02F0F2141EB9A5BF008C6F9C /* pserver.cpp in Sources */,
 				02F0F20C1EB9A5BF008C6F9C /* CommunityCards.cpp in Sources */,
+				02D50E2C1EE0B1D8004381E0 /* server_message.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
