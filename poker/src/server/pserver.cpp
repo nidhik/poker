@@ -64,9 +64,68 @@ using namespace std;
 
 ConfigParser config;
 
+//------------------------------------------------------------------------------------------------------------------------
+typedef struct {
+    const void *buf;
+    size_t length;
+    socktype	sock;
+}message;
 
-class session
-: public std::enable_shared_from_this<session>
+
+typedef std::deque<message> message_queue;
+
+//----------------------------------------------------------------------
+
+typedef std::map<socktype, session_ptr> session_map;
+typedef std::pair<socktype, session_ptr> socket_session_pair;
+
+class MessageDispatcher : public Dispatcher,
+public std::enable_shared_from_this<MessageDispatcher>
+{
+public:
+    virtual int dispatch(socktype fd, const void *buf, size_t count)
+    {
+        
+        session_map::const_iterator pos = participants_.find(fd);
+        if (pos == participants_.end()) {
+            return 0;
+        } else {
+            session_ptr session =  pos->second;
+            
+            return session->deliver(fd, buf, count);
+        }
+   
+    }
+    
+    
+    
+    bool registerSession(session_ptr participant, socktype sock, sockaddr_in *saddr) {
+        participants_.insert(socket_session_pair(sock, participant));
+        return client_add(this, sock, saddr);
+    }
+    
+    bool unregisterSession(session_ptr participant, socktype sock) {
+        participants_.erase(sock);
+        return client_remove(sock);
+    }
+    
+    int handleSession(socktype sock, char data_[1024], std::size_t bytes) {
+        return client_handle(sock, data_, bytes);
+    }
+private:
+    session_map participants_;
+    
+};
+
+//------------------------------------------------------------------------------------------------------------------------
+
+MessageDispatcher dispatcher_singelton;
+
+//------------------------------------------------------------------------------------------------------------------------
+
+class session:
+    public ClientSession,
+    public std::enable_shared_from_this<session>
 {
 public:
     session(tcp::socket socket)
@@ -81,9 +140,28 @@ public:
         unsigned int saddrlen = sizeof(saddr);
         memset(&saddr, 0, sizeof(sockaddr_in));
 
+        dispatcher_singelton.registerSession(shared_from_this(), socket_.native_handle(), &saddr);
         
-        client_add(socket_.native_handle(), &saddr);
         do_read();
+    }
+    
+    virtual int deliver(socktype fd, const void *buf, std::size_t bytes) {
+        // add the msg to the queue
+        message msg;
+        memset(&msg, 0, sizeof(message));
+        msg.sock = fd;
+        msg.length = bytes;
+        msg.buf = buf;
+
+        
+        bool write_in_progress = !write_msgs_.empty();
+        write_msgs_.push_back(msg);
+        if (!write_in_progress)
+        {
+            do_write();
+        }
+       
+        return bytes;
     }
     
 private:
@@ -104,11 +182,11 @@ private:
                                                 errno = 0;
                                             log_msg("clientsock", "(%d) socket closed (%d: %s)", sender, errno, strerror(errno));
                                             
-                                            client_remove(sender);
+                                            dispatcher_singelton.unregisterSession(shared_from_this(), sender);
                                             
                                             
                                         }
-                                        do_write(length);
+                                        do_read();
                                     }
                                     else if ((boost::asio::error::eof == ec) ||
                                         (boost::asio::error::connection_reset == ec))
@@ -116,21 +194,42 @@ private:
                                         // handle the disconnect.
                                         log_msg("clientsock", "(%d) socket disconnected (%d: %s)", sender, 0, strerror(errno));
                                         
-                                        client_remove(sender);
+                                        dispatcher_singelton.unregisterSession(shared_from_this(), sender);
                                     }
                                 });
     }
     
-    void do_write(std::size_t length)
+    void do_write()
     {
         auto self(shared_from_this());
-        do_read();
-//        boost::asio::async_write(socket_, boost::asio::buffer(data_, length),
+        boost::asio::async_write(socket_,
+                                 boost::asio::buffer(write_msgs_.front().buf,
+                                                     write_msgs_.front().length),
+                                 [this, self](boost::system::error_code ec, std::size_t /*length*/)
+                                 {
+                                     if (!ec)
+                                     {
+                                         write_msgs_.pop_front();
+                                         if (!write_msgs_.empty())
+                                         {
+                                             do_write();
+                                         }
+                                     }
+                                     else
+                                     {
+                                         int sender = socket_.native_handle();
+                                         log_msg("clientsock", "Could not write. (%d) socket disconnected (%d: %s)", sender, 0, strerror(errno));
+                                         dispatcher_singelton.unregisterSession(shared_from_this(), sender);
+                                     }
+                                 });
+//        auto self(shared_from_this());
+//       
+//        boost::asio::async_write(socket_, boost::asio::buffer(buf, length),
 //                                 [this, self](boost::system::error_code ec, std::size_t /*length*/)
 //                                 {
 //                                     if (!ec)
 //                                     {
-//                                         do_read();
+//                                         log_msg("clientsock", "wrote message");
 //                                     }
 //                                 });
     }
@@ -138,7 +237,10 @@ private:
     tcp::socket socket_;
     enum { max_length = 1024 };
     char data_[max_length];
+    message_queue write_msgs_;
 };
+
+//------------------------------------------------------------------------------------------------------------------------
 
 class server
 {
@@ -168,8 +270,10 @@ private:
     
     tcp::acceptor acceptor_;
     tcp::socket socket_;
+    
 };
 
+//------------------------------------------------------------------------------------------------------------------------
 
 bool config_load()
 {

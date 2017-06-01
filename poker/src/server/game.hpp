@@ -37,6 +37,25 @@
 #include "GameController.hpp"
 
 
+
+class ClientSession
+{
+public:
+    virtual ~ClientSession() {}
+    virtual int deliver(socktype fd, const void *buf, std::size_t bytes) = 0;
+};
+
+
+typedef std::shared_ptr<ClientSession> session_ptr;
+
+class Dispatcher
+{
+public:
+    virtual ~Dispatcher() {}
+    virtual int dispatch(socktype fd, const void *buf, size_t count) = 0;
+};
+
+
 //! \brief Client connection states
 typedef enum {
 	Connected = 0x01,
@@ -47,6 +66,8 @@ typedef enum {
 
 //! \brief Client-connection information
 typedef struct {
+    Dispatcher *dispatcher;
+    
 	//! \brief Unique client identifier
 	int		id;
 	
@@ -102,7 +123,7 @@ typedef std::map<std::string,clientcon_archive>	clientconar_type;
 // used by pserver.cpp
 int gameloop();
 clients_type& get_client_vector();
-bool client_add(socktype sock, sockaddr_in *saddr);
+bool client_add(Dispatcher *dispatcher, socktype sock, sockaddr_in *saddr);
 bool client_remove(socktype sock);
 int client_handle(socktype sock, char data_[1024], std::size_t bytes);
 
