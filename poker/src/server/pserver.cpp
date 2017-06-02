@@ -65,7 +65,16 @@ using namespace std;
 ConfigParser config;
 
 //------------------------------------------------------------------------------------------------------------------------
+typedef struct {
+    const void *buf;
+    size_t length;
+    socktype	sock;
+}message;
 
+
+typedef std::deque<message> message_queue;
+
+//----------------------------------------------------------------------
 
 typedef std::map<socktype, session_ptr> session_map;
 typedef std::pair<socktype, session_ptr> socket_session_pair;
@@ -76,16 +85,19 @@ public std::enable_shared_from_this<MessageDispatcher>
 public:
     virtual int dispatch(socktype fd, const void *buf, size_t count)
     {
+        
         session_map::const_iterator pos = participants_.find(fd);
         if (pos == participants_.end()) {
             return 0;
         } else {
             session_ptr session =  pos->second;
             
-            return session->deliver(buf, count);
+            return session->deliver(fd, buf, count);
         }
    
     }
+    
+    
     
     bool registerSession(session_ptr participant, socktype sock, sockaddr_in *saddr) {
         participants_.insert(socket_session_pair(sock, participant));
@@ -133,8 +145,22 @@ public:
         do_read();
     }
     
-    virtual int deliver(const void *buf, std::size_t bytes) {
-        do_write(buf, bytes);
+    virtual int deliver(socktype fd, const void *buf, std::size_t bytes) {
+        // add the msg to the queue
+        message msg;
+        memset(&msg, 0, sizeof(message));
+        msg.sock = fd;
+        msg.length = bytes;
+        msg.buf = buf;
+
+        
+        bool write_in_progress = !write_msgs_.empty();
+        write_msgs_.push_back(msg);
+        if (!write_in_progress)
+        {
+            do_write();
+        }
+       
         return bytes;
     }
     
@@ -173,23 +199,45 @@ private:
                                 });
     }
     
-    void do_write(const void *buf, std::size_t length)
+    void do_write()
     {
         auto self(shared_from_this());
-       
-        boost::asio::async_write(socket_, boost::asio::buffer(buf, length),
+        boost::asio::async_write(socket_,
+                                 boost::asio::buffer(write_msgs_.front().buf,
+                                                     write_msgs_.front().length),
                                  [this, self](boost::system::error_code ec, std::size_t /*length*/)
                                  {
                                      if (!ec)
                                      {
-                                         log_msg("clientsock", "wrote message");
+                                         write_msgs_.pop_front();
+                                         if (!write_msgs_.empty())
+                                         {
+                                             do_write();
+                                         }
+                                     }
+                                     else
+                                     {
+                                         int sender = socket_.native_handle();
+                                         log_msg("clientsock", "Could not write. (%d) socket disconnected (%d: %s)", sender, 0, strerror(errno));
+                                         dispatcher_singelton.unregisterSession(shared_from_this(), sender);
                                      }
                                  });
+//        auto self(shared_from_this());
+//       
+//        boost::asio::async_write(socket_, boost::asio::buffer(buf, length),
+//                                 [this, self](boost::system::error_code ec, std::size_t /*length*/)
+//                                 {
+//                                     if (!ec)
+//                                     {
+//                                         log_msg("clientsock", "wrote message");
+//                                     }
+//                                 });
     }
     
     tcp::socket socket_;
     enum { max_length = 1024 };
     char data_[max_length];
+    message_queue write_msgs_;
 };
 
 //------------------------------------------------------------------------------------------------------------------------

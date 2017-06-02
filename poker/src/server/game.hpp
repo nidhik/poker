@@ -42,7 +42,7 @@ class ClientSession
 {
 public:
     virtual ~ClientSession() {}
-    virtual int deliver(const void *buf, std::size_t bytes) = 0;
+    virtual int deliver(socktype fd, const void *buf, std::size_t bytes) = 0;
 };
 
 
