@@ -135,9 +135,8 @@ public:
     
     void start()
     {
-        log_msg("server", "2 Socket fd %d", socket_.native_handle());
+        log_msg("clientsock", "socket fd %d", socket_.native_handle());
         sockaddr_in saddr;
-        unsigned int saddrlen = sizeof(saddr);
         memset(&saddr, 0, sizeof(sockaddr_in));
 
         dispatcher_singelton.registerSession(shared_from_this(), socket_.native_handle(), &saddr);
@@ -202,6 +201,7 @@ private:
     void do_write()
     {
         auto self(shared_from_this());
+        
         boost::asio::async_write(socket_,
                                  boost::asio::buffer(write_msgs_.front().buf,
                                                      write_msgs_.front().length),
@@ -222,16 +222,6 @@ private:
                                          dispatcher_singelton.unregisterSession(shared_from_this(), sender);
                                      }
                                  });
-//        auto self(shared_from_this());
-//       
-//        boost::asio::async_write(socket_, boost::asio::buffer(buf, length),
-//                                 [this, self](boost::system::error_code ec, std::size_t /*length*/)
-//                                 {
-//                                     if (!ec)
-//                                     {
-//                                         log_msg("clientsock", "wrote message");
-//                                     }
-//                                 });
     }
     
     tcp::socket socket_;
