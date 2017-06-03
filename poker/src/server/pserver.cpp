@@ -303,6 +303,7 @@ void scheduleHandleGame(const boost::system::error_code& /*e*/,
 
 int main(int argc, char* argv[])
 {
+    
     // use config-directory set on command-line
     if (argc >= 3 && (argv[1][0] == '-' && argv[1][1] == 'c'))
     {

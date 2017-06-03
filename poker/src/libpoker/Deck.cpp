@@ -25,6 +25,7 @@
 
 #include "GameDebug.hpp"
 #include "Deck.hpp"
+#include <random>
 
 using namespace std;
 
@@ -69,7 +70,8 @@ bool Deck::pop(Card &card)
 
 bool Deck::shuffle()
 {
-	random_shuffle(cards.begin(), cards.end());
+    std::mt19937 r{std::random_device{}()};
+    std::shuffle(std::begin(cards), std::end(cards), r);
 	return true;
 }
 
