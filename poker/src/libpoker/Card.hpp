@@ -42,7 +42,7 @@ public:
 		King,
 		Ace,
 		
-		FirstFace=Two,
+		FirstFace=Six,
 		LastFace=Ace
 	} Face;
 	

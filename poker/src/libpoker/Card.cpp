@@ -24,10 +24,16 @@
 #include "Card.hpp"
 
 
+//static const char face_symbols[] = {
+//	'2', '3', '4', '5', '6', '7', '8', '9',
+//	'T', 'J', 'Q', 'K', 'A'
+//};
+
 static const char face_symbols[] = {
-	'2', '3', '4', '5', '6', '7', '8', '9',
+	'6', '7', '8', '9',
 	'T', 'J', 'Q', 'K', 'A'
 };
+
 
 static const char suit_symbols[] = {
 	'c', 'd', 'h', 's'
