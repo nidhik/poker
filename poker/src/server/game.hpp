@@ -36,13 +36,13 @@
 
 #include "GameController.hpp"
 
-
+using namespace std;
 
 class ClientSession
 {
 public:
     virtual ~ClientSession() {}
-    virtual int deliver(socktype fd, const void *buf, std::size_t bytes) = 0;
+    virtual int deliver(socktype fd, string msg) = 0;
 };
 
 
@@ -52,7 +52,7 @@ class Dispatcher
 {
 public:
     virtual ~Dispatcher() {}
-    virtual int dispatch(socktype fd, const void *buf, size_t count) = 0;
+    virtual int dispatch(socktype fd, string msg) = 0;
 };
 
 

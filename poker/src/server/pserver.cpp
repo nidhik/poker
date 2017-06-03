@@ -66,8 +66,7 @@ ConfigParser config;
 
 //------------------------------------------------------------------------------------------------------------------------
 typedef struct {
-    const void *buf;
-    size_t length;
+    string msg;
     socktype	sock;
 }message;
 
@@ -83,7 +82,7 @@ class MessageDispatcher : public Dispatcher,
 public std::enable_shared_from_this<MessageDispatcher>
 {
 public:
-    virtual int dispatch(socktype fd, const void *buf, size_t count)
+    virtual int dispatch(socktype fd, string msg)
     {
         
         session_map::const_iterator pos = participants_.find(fd);
@@ -92,7 +91,7 @@ public:
         } else {
             session_ptr session =  pos->second;
             
-            return session->deliver(fd, buf, count);
+            return session->deliver(fd, msg);
         }
    
     }
@@ -144,23 +143,22 @@ public:
         do_read();
     }
     
-    virtual int deliver(socktype fd, const void *buf, std::size_t bytes) {
+    virtual int deliver(socktype fd, string msg) {
         // add the msg to the queue
-        message msg;
-        memset(&msg, 0, sizeof(message));
-        msg.sock = fd;
-        msg.length = bytes;
-        msg.buf = buf;
+        message toWrite;
+        memset(&toWrite, 0, sizeof(message));
+        toWrite.sock = fd;
+        toWrite.msg = msg;
 
         
         bool write_in_progress = !write_msgs_.empty();
-        write_msgs_.push_back(msg);
+        write_msgs_.push_back(toWrite);
         if (!write_in_progress)
         {
             do_write();
         }
        
-        return bytes;
+        return (int) msg.size();
     }
     
 private:
@@ -201,10 +199,11 @@ private:
     void do_write()
     {
         auto self(shared_from_this());
-        
+        log_msg("clientsock", "Writing %s", write_msgs_.front().msg.c_str());
+       
         boost::asio::async_write(socket_,
-                                 boost::asio::buffer(write_msgs_.front().buf,
-                                                     write_msgs_.front().length),
+                                 boost::asio::buffer(write_msgs_.front().msg.data(),
+                                                     write_msgs_.front().msg.size()),
                                  [this, self](boost::system::error_code ec, std::size_t /*length*/)
                                  {
                                      if (!ec)

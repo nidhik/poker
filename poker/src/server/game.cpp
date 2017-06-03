@@ -94,7 +94,10 @@ int send_msg(socktype sock, const char *message)
     
     char buf[MSG_BUFFER_SIZE];
 	const int len = snprintf(buf, sizeof(buf), "%s\r\n", message);
-	const int bytes = conn->dispatcher->dispatch(sock, buf, len);
+    string out(buf);
+    log_msg("clientsock write", "\[%s\]", out.c_str());
+	const int bytes = conn->dispatcher->dispatch(sock, out);
+
 	
 	// FIXME: send remaining bytes if not all have been sent
 	if (len != bytes)
