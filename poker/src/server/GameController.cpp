@@ -1448,7 +1448,7 @@ int GameController::handleTable(Table *t)
 	
 	
 	// only 1 player left? close table
-	if (t->countPlayers() == 1)
+	if (t->countPlayers() <= 1)
 		return -1;
 	
 	return 0;

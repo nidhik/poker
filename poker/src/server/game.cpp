@@ -1461,6 +1461,7 @@ int gameloop()
 				newgame->setPlayerMax(g->getPlayerMax());
 				newgame->setPlayerTimeout(g->getPlayerTimeout());
 				newgame->setPlayerStakes(g->getPlayerStakes());
+                newgame->setMaxBuyIn(g->getMaxBuyIn())  ;
 				games[gid] = newgame;
 				
 				log_msg("game", "restarted game (old: %d, new: %d)",
