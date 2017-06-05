@@ -94,7 +94,6 @@ bool GameController::addPlayer(int cid, int buyIn)
     if (started && !ended) {
         Table *t = tables.begin()->second;
         chooseSeat(t, p);
-        sendTableSnapshot(t);
     }
 
 	

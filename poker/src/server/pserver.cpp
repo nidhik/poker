@@ -199,7 +199,6 @@ private:
     void do_write()
     {
         auto self(shared_from_this());
-        log_msg("clientsock", "Writing %s", write_msgs_.front().msg.c_str());
        
         boost::asio::async_write(socket_,
                                  boost::asio::buffer(write_msgs_.front().msg.data(),
