@@ -1566,7 +1566,7 @@ int GameController::tick()
 	else if (ended)
 	{
 		// delay before game gets deleted
-		if ((unsigned int) difftime(time(NULL), ended_time) >= 0) // used to be 4 min
+		if ((unsigned int) difftime(time(NULL), ended_time) >= 60) // used to be 4 min
 		{
 			// remove all players
 			for (players_type::iterator e = players.begin(); e != players.end();)
