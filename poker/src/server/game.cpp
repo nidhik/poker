@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright 2008, 2009, Dominik Geyer
  *
  * This file is part of HoldingNuts.
@@ -301,51 +301,47 @@ bool client_remove(socktype sock)
 {
 	for (clients_type::iterator client = clients.begin(); client != clients.end(); client++)
 	{
-//		if (/* DISABLES CODE */ (0) && client->sock == sock)
-//		{
-//			socket_close(client->sock);
-//			
-//			bool send_msg = false;
-//			if (client->state & SentInfo)
-//			{
-//				// remove player from unstarted games
-//				for (games_type::iterator e = games.begin(); e != games.end(); e++)
-//				{
-//					GameController *g = e->second;
-//					if (!g->isStarted() && g->isPlayer(client->id))
-//						g->removePlayer(client->id);
-//				}
-//				
-//				
-//				snprintf(msg, sizeof(msg),
-//					"FoyerLeave: %d  ClientId: %d ClientName\"%s\"",
-//					SnapFoyerLeave, client->id, client->info.name);
-//				
-//				send_msg = true;
-//				
-//				// save client-con in archive
-//				string uuid = client->uuid;
-//				
-//				if (uuid.length())
-//				{
-//					// FIXME: only add max. 3 entries for each IP
-//					con_archive[uuid].logout_time = time(NULL);
-//				}
-//			}
-//			
-//			log_msg("clientsock", "(%d) connection closed", client->sock);
-//			
-//			clients.erase(client);
-//			
-//			// send foyer snapshot to all remaining clients
-//			if (send_msg)
-//				client_snapshot(-1, SnapFoyer, msg);
-//			
-//			break;
-//        }
-        if (client->sock == sock) {
-            log_msg("clientsock", "(%d) connection closed", client->sock);
-            clients.erase(client);
+		if (client->sock == sock)
+		{
+			//socket_close(client->sock);
+			
+			bool send_msg = false;
+			if (client->state & SentInfo)
+			{
+				// remove player from unstarted games
+				for (games_type::iterator e = games.begin(); e != games.end(); e++)
+				{
+					GameController *g = e->second;
+					if (!g->isStarted() && g->isPlayer(client->id))
+						g->removePlayer(client->id);
+				}
+				
+				
+				snprintf(msg, sizeof(msg),
+					"FoyerLeave: %d  ClientId: %d ClientName\"%s\"",
+					SnapFoyerLeave, client->id, client->info.name);
+				
+				send_msg = true;
+				
+				// save client-con in archive
+				string uuid = client->uuid;
+				
+				if (uuid.length())
+				{
+					// FIXME: only add max. 3 entries for each IP
+					con_archive[uuid].logout_time = time(NULL);
+				}
+			}
+			
+			log_msg("clientsock", "(%d) connection closed", client->sock);
+			
+			clients.erase(client);
+			
+			// send foyer snapshot to all remaining clients
+			if (send_msg)
+				client_snapshot(-1, SnapFoyer, msg);
+			
+			break;
         }
 	}
 	
