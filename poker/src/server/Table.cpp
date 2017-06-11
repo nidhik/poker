@@ -118,7 +118,7 @@ bool Table::isAllin()
 		{
 			active_players++;
 			
-			Player *p = seats[i].player;
+			Player *p = seats[i].getPlayer();
 			
 			if (p->getStake() == 0)
 				count++;
@@ -239,7 +239,7 @@ void Table::collectBets()
 			}
 			
 			// mark pot as final if at least one player is allin
-			Player *p = seats[i].player;
+			Player *p = seats[i].getPlayer();
 			if (p->getStake() == 0)
 				cur_pot->final = true;
 			

@@ -84,16 +84,16 @@ bool GameController::addPlayer(int cid, int buyIn)
         return false;
     }
 	
-	Player *p = new Player;
-	p->client_id = cid;
+	Player p;
+	p.client_id = cid;
     
-	p->stake = buyIn;
+	p.stake = buyIn;
 	
-	players[cid] = p;
+    players[cid] = make_shared<Player>(std::move(p));
     
     if (started && !ended) {
         Table *t = tables.begin()->second;
-        chooseSeat(t, p);
+        chooseSeat(t, players[cid]);
     }
 
 	
@@ -143,7 +143,7 @@ Player* GameController::findPlayer(int cid)
 	if (it == players.end())
 		return NULL;
 	
-	return it->second;
+	return (it->second).get();
 }
 
 bool GameController::setPlayerMax(unsigned int max)
@@ -266,7 +266,7 @@ bool GameController::createWinlist(Table *t, vector< vector<HandStrength> > &win
 	unsigned int showdown_player = t->last_bet_player;
 	for (unsigned int i=0; i < t->countActivePlayers(); i++)
 	{
-		Player *p = t->seats[showdown_player].player;
+		Player *p = t->seats[showdown_player].getPlayer();
 		
 		HandStrength strength;
 		GameLogic::getStrength(&(p->holecards), &(t->communitycards), &strength);
@@ -306,7 +306,7 @@ void GameController::sendTableSnapshot(Table *t)
 		if (!s->occupied)
 			continue;
 		
-		Player *p = s->player;
+		Player *p = s->getPlayer();
 		
 		// assemble hole-cards string
 		string shole;
@@ -445,7 +445,7 @@ void GameController::dealHole(Table *t)
 		if (!t->seats[i].occupied)
 			continue;
 		
-		Player *p = t->seats[i].player;
+		Player *p = t->seats[i].getPlayer();
         
         if (p->hasPostedBlind) {
             HoleCards h;
@@ -571,7 +571,7 @@ void GameController::stateNewRound(Table *t)
 		t->seats[i].bet = 0;
 		
 		
-		Player *p = t->seats[i].player;
+		Player *p = t->seats[i].getPlayer();
 		
 		p->holecards.clear();
 		p->resetLastAction();
@@ -681,8 +681,8 @@ void GameController::stateBlinds(Table *t)
 	t->bet_amount = blind.amount;
 	
 	
-	Player *pSmall = t->seats[t->sb].player;
-	Player *pBig = t->seats[t->bb].player;
+	Player *pSmall = t->seats[t->sb].getPlayer();
+	Player *pBig = t->seats[t->bb].getPlayer();
     
     pBig->hasPostedBlind = true;
     pSmall->hasPostedBlind = true;
@@ -720,7 +720,7 @@ void GameController::stateBlinds(Table *t)
     t->timeout_start = time(NULL);
     chips_type minimum_bet = determineMinimumBet(t);
 
-	Player *p = t->seats[t->cur_player].player;
+	Player *p = t->seats[t->cur_player].getPlayer();
     snprintf(msg, sizeof(msg),
               "Your turn! Check:%d Call:%d Raise:%d Fold:%d Bet:%d MinBet:%d",
               isAllowedAction(t, Player::PlayerAction::Check),
@@ -754,7 +754,7 @@ void GameController::stateBlinds(Table *t)
 
 void GameController::stateBetting(Table *t)
 {
-	Player *p = t->seats[t->cur_player].player;
+	Player *p = t->seats[t->cur_player].getPlayer();
 	
 	bool allowed_action = false;  // is action allowed?
 	bool auto_action = false;
@@ -1049,7 +1049,7 @@ void GameController::stateBetting(Table *t)
 		t->timeout_start = time(NULL);
 		
 		// reset current player's last action
-		p = t->seats[t->cur_player].player;
+		p = t->seats[t->cur_player].getPlayer();
 		p->resetLastAction();
 		
 		t->scheduleState(Table::Betting, 1);
@@ -1061,7 +1061,7 @@ void GameController::stateBetting(Table *t)
     // re-initialize the player's timeout
     t->timeout_start = time(NULL);
 
-	p = t->seats[t->cur_player].player;
+	p = t->seats[t->cur_player].getPlayer();
 	if (!t->nomoreaction && p->stake > 0)
     {
         
@@ -1090,7 +1090,7 @@ void GameController::stateAskShow(Table *t)
 {
 	bool chose_action = false;
 	
-	Player *p = t->seats[t->cur_player].player;
+	Player *p = t->seats[t->cur_player].getPlayer();
 	
 	if (!p->stake && t->countActivePlayers() > 1) // player went allin and has no option to show/muck
 	{
@@ -1184,7 +1184,7 @@ void GameController::stateAskShow(Table *t)
 void GameController::stateAllFolded(Table *t)
 {
 	// get last remaining player
-	Player *p = t->seats[t->cur_player].player;
+	Player *p = t->seats[t->cur_player].getPlayer();
 	
 	// send PlayerShow snapshot if cards were shown
 	if (t->seats[t->cur_player].showcards)
@@ -1213,7 +1213,7 @@ void GameController::stateShowdown(Table *t)
 	{
 		if (t->seats[showdown_player].showcards || t->nomoreaction)
 		{
-			Player *p = t->seats[showdown_player].player;
+			Player *p = t->seats[showdown_player].getPlayer();
 			
 			sendPlayerShowSnapshot(t, p);
 		}
@@ -1259,7 +1259,7 @@ void GameController::stateShowdown(Table *t)
 			{
 				const unsigned int seat_num = tw[pi].getId();
 				Seat *seat = &(t->seats[seat_num]);
-				Player *p = seat->player;
+				Player *p = seat->getPlayer();
 				
 				// skip pot if player not involved in it
 				if (!t->isSeatInvolvedInPot(pot, seat_num))
@@ -1296,7 +1296,7 @@ void GameController::stateShowdown(Table *t)
 				
 				
 				Seat *seat = &(t->seats[oddchips_player]);
-				Player *p = seat->player;
+				Player *p = seat->getPlayer();
 				
 				p->stake += odd_chips;
 				seat->bet += odd_chips;
@@ -1346,7 +1346,7 @@ void GameController::stateEndRound(Table *t)
 		if (!t->seats[i].occupied)
 			continue;
 		
-		Player *p = t->seats[i].player;
+		Player *p = t->seats[i].getPlayer();
 		
 		// player has no stake left
 		if (p->stake == 0)
@@ -1360,7 +1360,7 @@ void GameController::stateEndRound(Table *t)
 		//const chips_type stake_before = n->first;
 		const unsigned int seat_num = n->second;
 		
-		Player *p = t->seats[seat_num].player;
+		Player *p = t->seats[seat_num].getPlayer();
 		
 		
 		// send out player-broke snapshot
@@ -1390,7 +1390,7 @@ void GameController::stateEndRound(Table *t)
         
     }
     for (players_type::iterator e = players.begin(); e != players.end();) {
-        Player *p = e->second;
+        Player *p = (e->second).get();
         if (p->left) {
             if (owner == p->client_id) {
                 selectNewOwner();
@@ -1471,17 +1471,17 @@ void GameController::start()
 	t->setTableId(tid);
 	
 	// place players randomly at table
-	vector<Player*> rndseats;
-	players_type::const_iterator e = players.begin();
+	vector<Player *> rndseats;
+	auto e = players.begin();
 	for (unsigned int i=0; i < 10; i++)
 	{
 		if (e != players.end())
 		{
-			rndseats.push_back(e->second);
+            rndseats.push_back((e->second).get());
 			e++;
 		}
 		else
-			rndseats.push_back(0);
+			rndseats.push_back(nullptr);
 	}
 	
 	
@@ -1499,7 +1499,8 @@ void GameController::start()
 		if (rndseats[i])
 		{
 			seat.occupied = true;
-			seat.player = rndseats[i];
+            Player *p = rndseats[i];
+			seat.player = make_shared<Player>(*p);
 			
 			if (!chose_dealer)
 			{
@@ -1529,7 +1530,7 @@ void GameController::start()
 	t->scheduleState(Table::NewRound, 5);
 }
 
-void GameController::chooseSeat(Table *t, Player *p) {
+void GameController::chooseSeat(Table *t, shared_ptr<Player> p) {
     if (ended) {
         return;
     }
@@ -1541,9 +1542,8 @@ void GameController::chooseSeat(Table *t, Player *p) {
             seat.seat_no = i;
             seat.occupied = true;
             seat.player = p;
-            t->seats[i] = seat;
+            t->seats[i] = std::move(seat);
             log_msg("game", "Placed player in seat %d", i);
-            seat.player = nullptr;
             return;
         }
     }

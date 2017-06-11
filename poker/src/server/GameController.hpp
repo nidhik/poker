@@ -44,7 +44,7 @@ friend class TestCaseGameController;
 
 public:
 	typedef std::map<int,Table*>	tables_type;
-	typedef std::map<int,Player*>	players_type;
+	typedef std::map<int, std::shared_ptr<Player>>	players_type;
 	
 	typedef enum {
 		RingGame,   // Cash game
@@ -157,7 +157,7 @@ protected:
 	void sendPlayerShowSnapshot(Table *t, Player *p);
     
     bool isAllowedAction(Table *t, Player::PlayerAction action);
-    void chooseSeat(Table *t, Player *p);
+    void chooseSeat(Table *t, std::shared_ptr<Player> p);
 	
 private:
 	int game_id;

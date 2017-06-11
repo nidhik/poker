@@ -37,21 +37,19 @@ public:
     {
     }
     ~Seat() {
-        if (player) {
-            delete player;
-            player = nullptr;
-        }
-        
     }
     
     Seat(Seat & s) = delete;
     
     bool occupied;
     unsigned int seat_no;
-    Player *player;
+    std::shared_ptr<Player> player;
     chips_type bet;
     bool in_round;   // is player involved in current hand?
     bool showcards;  // does the player want to show cards?
+    Player * getPlayer() {
+        return player.get();
+    }
 };
 
 class Table
