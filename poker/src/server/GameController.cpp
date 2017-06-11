@@ -75,9 +75,6 @@ bool GameController::addPlayer(int cid, int buyIn)
 	// is the client already a player?
 	if (isPlayer(cid))
 		return false;
-	
-	Player *p = new Player;
-	p->client_id = cid;
     
     if (buyIn < player_stakes) {
         return false;
@@ -86,6 +83,9 @@ bool GameController::addPlayer(int cid, int buyIn)
     if (!unlimitedBuyIn && buyIn > max_buyIn) {
         return false;
     }
+	
+	Player *p = new Player;
+	p->client_id = cid;
     
 	p->stake = buyIn;
 	
@@ -301,7 +301,7 @@ void GameController::sendTableSnapshot(Table *t)
 	string sseats;
 	for (unsigned int i=0; i < 10; i++)
 	{
-		Table::Seat *s = &(t->seats[i]);
+		Seat *s = &(t->seats[i]);
 		
 		if (!s->occupied)
 			continue;
@@ -1258,7 +1258,7 @@ void GameController::stateShowdown(Table *t)
 			for (unsigned int pi=0; pi < winner_count; pi++)
 			{
 				const unsigned int seat_num = tw[pi].getId();
-				Table::Seat *seat = &(t->seats[seat_num]);
+				Seat *seat = &(t->seats[seat_num]);
 				Player *p = seat->player;
 				
 				// skip pot if player not involved in it
@@ -1295,7 +1295,7 @@ void GameController::stateShowdown(Table *t)
 					oddchips_player = t->getNextActivePlayer(oddchips_player);
 				
 				
-				Table::Seat *seat = &(t->seats[oddchips_player]);
+				Seat *seat = &(t->seats[oddchips_player]);
 				Player *p = seat->player;
 				
 				p->stake += odd_chips;
@@ -1470,8 +1470,6 @@ void GameController::start()
 	Table *t = new Table();
 	t->setTableId(tid);
 	
-	memset(t->seats, 0, sizeof(Table::Seat) * 10);
-	
 	// place players randomly at table
 	vector<Player*> rndseats;
 	players_type::const_iterator e = players.begin();
@@ -1494,8 +1492,7 @@ void GameController::start()
 	bool chose_dealer = false;
 	for (unsigned int i=0; i < rndseats.size(); i++)
 	{
-		Table::Seat seat;
-		memset(&seat, 0, sizeof(Table::Seat));
+		Seat seat;
 		
 		seat.seat_no = i;
 		
@@ -1513,7 +1510,8 @@ void GameController::start()
 		else
 			seat.occupied = false;
 		
-		t->seats[i] = seat;
+        t->seats[i] = seat;
+        seat.player = nullptr;
 	}
 	
 	
@@ -1537,15 +1535,14 @@ void GameController::chooseSeat(Table *t, Player *p) {
     }
     for (unsigned int i=0; i < max_players; i++)
     {
-        Table::Seat current = t->seats[i];
+        Seat current = t->seats[i];
         if (!current.occupied) {
-            Table::Seat seat;
-            memset(&seat, 0, sizeof(Table::Seat));
-            
+            Seat seat;
             seat.seat_no = i;
             seat.occupied = true;
             seat.player = p;
             t->seats[i] = seat;
+            seat.player = nullptr;
             return;
         }
     }

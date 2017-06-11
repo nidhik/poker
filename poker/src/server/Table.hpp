@@ -31,6 +31,25 @@
 #include "Player.hpp"
 #include "GameLogic.hpp"
 
+class Seat {
+public:
+    Seat() :occupied(false), seat_no(11), player(nullptr), bet(0), in_round(false), showcards(false)
+    {
+    }
+    ~Seat() {
+        if (player) {
+            delete player;
+        }
+        
+    }
+    bool occupied;
+    unsigned int seat_no;
+    Player *player;
+    chips_type bet;
+    bool in_round;   // is player involved in current hand?
+    bool showcards;  // does the player want to show cards?
+};
+
 class Table
 {
 friend class GameController;
@@ -57,14 +76,7 @@ public:
 		River
 	} BettingRound;
 	
-	typedef struct {
-		bool occupied;
-		unsigned int seat_no;
-		Player *player;
-		chips_type bet;
-		bool in_round;   // is player involved in current hand?
-		bool showcards;  // does the player want to show cards?
-	} Seat;
+	
 	
 	typedef struct {
 		chips_type amount;

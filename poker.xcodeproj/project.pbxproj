@@ -897,6 +897,7 @@
 		02F0F1CF1EB9A5A3008C6F9C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				DEVELOPMENT_TEAM = GFDDVAVUVC;
 				HEADER_SEARCH_PATHS = /usr/local/Cellar/boost/1.60.0_2/include;
 				"HEADER_SEARCH_PATHS[arch=*]" = /usr/local/Cellar/boost/1.60.0_2/include;
@@ -908,6 +909,7 @@
 		02F0F1D01EB9A5A3008C6F9C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				DEVELOPMENT_TEAM = GFDDVAVUVC;
 				HEADER_SEARCH_PATHS = /usr/local/Cellar/boost/1.60.0_2/include;
 				LIBRARY_SEARCH_PATHS = /usr/local/Cellar/boost/1.60.0_2/lib;

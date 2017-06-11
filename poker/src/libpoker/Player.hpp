@@ -62,6 +62,9 @@ public:
 	} SchedAction;
 	
 	Player();
+    ~Player() {
+        ;
+    }
 	
 	chips_type getStake() const { return stake; };
 	int getClientId() const { return client_id; };
