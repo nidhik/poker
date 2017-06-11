@@ -39,9 +39,13 @@ public:
     ~Seat() {
         if (player) {
             delete player;
+            player = nullptr;
         }
         
     }
+    
+    Seat(Seat & s) = delete;
+    
     bool occupied;
     unsigned int seat_no;
     Player *player;

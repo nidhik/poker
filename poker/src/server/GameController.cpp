@@ -1535,13 +1535,14 @@ void GameController::chooseSeat(Table *t, Player *p) {
     }
     for (unsigned int i=0; i < max_players; i++)
     {
-        Seat current = t->seats[i];
-        if (!current.occupied) {
+        Seat *currentSeatPtr = &(t->seats[i]);
+        if (! currentSeatPtr->occupied) {
             Seat seat;
             seat.seat_no = i;
             seat.occupied = true;
             seat.player = p;
             t->seats[i] = seat;
+            log_msg("game", "Placed player in seat %d", i);
             seat.player = nullptr;
             return;
         }
