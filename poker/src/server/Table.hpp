@@ -33,7 +33,7 @@
 
 class Seat {
 public:
-    Seat() :occupied(false), seat_no(11), player(nullptr), bet(0), in_round(false), showcards(false)
+    Seat() :occupied(false), seat_no(11), bet(0), in_round(false), showcards(false)
     {
     }
     ~Seat() {

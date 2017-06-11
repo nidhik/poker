@@ -84,12 +84,11 @@ bool GameController::addPlayer(int cid, int buyIn)
         return false;
     }
 	
-	Player p;
-	p.client_id = cid;
-    
-	p.stake = buyIn;
+    shared_ptr<Player> p = make_shared<Player>();
+	p->client_id = cid;
+	p->stake = buyIn;
 	
-    players[cid] = make_shared<Player>(std::move(p));
+    players[cid] = p;
     
     if (started && !ended) {
         Table *t = tables.begin()->second;
@@ -1471,42 +1470,48 @@ void GameController::start()
 	t->setTableId(tid);
 	
 	// place players randomly at table
-	vector<Player *> rndseats;
+	vector<shared_ptr<Player>> rndseats;
+    vector<bool> occupiedSeats;
+    
 	auto e = players.begin();
 	for (unsigned int i=0; i < 10; i++)
 	{
 		if (e != players.end())
 		{
-            rndseats.push_back((e->second).get());
+            rndseats.push_back(e->second);
+            occupiedSeats.push_back(true);
 			e++;
 		}
 		else
-			rndseats.push_back(nullptr);
+            occupiedSeats.push_back(false);
+			
 	}
 	
 	
-#ifndef SERVER_TESTING
-	random_shuffle(rndseats.begin(), rndseats.end());
-#endif
+//#ifndef SERVER_TESTING
+//	random_shuffle(rndseats.begin(), rndseats.end());
+//#endif
 	
 	bool chose_dealer = false;
-	for (unsigned int i=0; i < rndseats.size(); i++)
+    auto it = begin(rndseats);
+	for (unsigned int i=0; i < occupiedSeats.size(); i++)
 	{
 		Seat seat;
 		
 		seat.seat_no = i;
 		
-		if (rndseats[i])
+		if (occupiedSeats[i] == true)
 		{
 			seat.occupied = true;
-            Player *p = rndseats[i];
-			seat.player = make_shared<Player>(*p);
+            auto p = *it;
+            seat.player = p;
 			
 			if (!chose_dealer)
 			{
 				t->dealer = i;
 				chose_dealer = true;
 			}
+            it++;
 		}
 		else
 			seat.occupied = false;
