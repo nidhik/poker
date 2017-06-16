@@ -1020,7 +1020,7 @@ int client_cmd_create(clientcon *client, Tokenizer &t)
 		2.0f,
 		180,
 		"",
-		false,
+		true,
 	};
 	
 	
