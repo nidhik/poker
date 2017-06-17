@@ -34,6 +34,7 @@
 #include "ConfigParser.hpp"
 
 #include "game.hpp"
+#include "boost/algorithm/string/replace.hpp"
 
 
 using namespace std;
@@ -1083,6 +1084,8 @@ int client_cmd_create(clientcon *client, Tokenizer &t)
 		{
 			if (infoarg.length() > 50)
 				infoarg = string(infoarg, 0, 50);
+            
+            boost::replace_all(infoarg, "_", " ");
 			
 			ginfo.name = infoarg;
 		}
