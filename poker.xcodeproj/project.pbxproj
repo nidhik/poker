@@ -99,6 +99,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		024258EB1EFF19600086B4B2 /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
+		024258EC1EFF19700086B4B2 /* CMakeLists.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
 		028EE8021EDFAF86003003A7 /* libboost_serialization.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libboost_serialization.dylib; path = ../../../../../usr/local/Cellar/boost/1.60.0_2/lib/libboost_serialization.dylib; sourceTree = "<group>"; };
 		028EE8031EDFAF86003003A7 /* libboost_signals-mt.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libboost_signals-mt.dylib"; path = "../../../../../usr/local/Cellar/boost/1.60.0_2/lib/libboost_signals-mt.dylib"; sourceTree = "<group>"; };
 		028EE8041EDFAF86003003A7 /* libboost_signals.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libboost_signals.dylib; path = ../../../../../usr/local/Cellar/boost/1.60.0_2/lib/libboost_signals.dylib; sourceTree = "<group>"; };
@@ -243,8 +245,6 @@
 		02F0F1ED1EB9A5BF008C6F9C /* GameController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameController.cpp; sourceTree = "<group>"; };
 		02F0F1EE1EB9A5BF008C6F9C /* GameController.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = GameController.hpp; sourceTree = "<group>"; };
 		02F0F1EF1EB9A5BF008C6F9C /* pserver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pserver.cpp; sourceTree = "<group>"; };
-		02F0F1F01EB9A5BF008C6F9C /* pserver.rc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = pserver.rc; sourceTree = "<group>"; };
-		02F0F1F21EB9A5BF008C6F9C /* pserver.ico */ = {isa = PBXFileReference; lastKnownFileType = image.ico; path = pserver.ico; sourceTree = "<group>"; };
 		02F0F1F31EB9A5BF008C6F9C /* server_variables.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = server_variables.hpp; sourceTree = "<group>"; };
 		02F0F1F41EB9A5BF008C6F9C /* Table.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Table.cpp; sourceTree = "<group>"; };
 		02F0F1F51EB9A5BF008C6F9C /* Table.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Table.hpp; sourceTree = "<group>"; };
@@ -487,6 +487,7 @@
 		02F0F1C91EB9A5A3008C6F9C /* poker */ = {
 			isa = PBXGroup;
 			children = (
+				024258EC1EFF19700086B4B2 /* CMakeLists.txt */,
 				02F0F2201EB9A7D0008C6F9C /* LICENSE */,
 				02F0F1D11EB9A5BF008C6F9C /* src */,
 			);
@@ -496,6 +497,7 @@
 		02F0F1D11EB9A5BF008C6F9C /* src */ = {
 			isa = PBXGroup;
 			children = (
+				024258EB1EFF19600086B4B2 /* CMakeLists.txt */,
 				02F0F1D51EB9A5BF008C6F9C /* Config.h */,
 				02F0F1D61EB9A5BF008C6F9C /* Debug.h */,
 				02F0F1D71EB9A5BF008C6F9C /* libpoker */,
@@ -540,21 +542,11 @@
 				02F0F1ED1EB9A5BF008C6F9C /* GameController.cpp */,
 				02F0F1EE1EB9A5BF008C6F9C /* GameController.hpp */,
 				02F0F1EF1EB9A5BF008C6F9C /* pserver.cpp */,
-				02F0F1F01EB9A5BF008C6F9C /* pserver.rc */,
-				02F0F1F11EB9A5BF008C6F9C /* res */,
 				02F0F1F31EB9A5BF008C6F9C /* server_variables.hpp */,
 				02F0F1F41EB9A5BF008C6F9C /* Table.cpp */,
 				02F0F1F51EB9A5BF008C6F9C /* Table.hpp */,
 			);
 			path = server;
-			sourceTree = "<group>";
-		};
-		02F0F1F11EB9A5BF008C6F9C /* res */ = {
-			isa = PBXGroup;
-			children = (
-				02F0F1F21EB9A5BF008C6F9C /* pserver.ico */,
-			);
-			path = res;
 			sourceTree = "<group>";
 		};
 		02F0F1F61EB9A5BF008C6F9C /* system */ = {
