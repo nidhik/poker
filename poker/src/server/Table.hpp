@@ -25,6 +25,7 @@
 #define _TABLE_H
 
 #include <ctime>
+#include <memory>
 
 #include "Deck.hpp"
 #include "CommunityCards.hpp"

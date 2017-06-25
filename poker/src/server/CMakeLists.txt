@@ -38,5 +38,13 @@ target_link_libraries(holdingnuts-server
 	${aux_lib}
 )
 
+#Boost
+find_package(Boost 1.58.0 COMPONENTS system program_options REQUIRED)
+
+if(Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+    target_link_libraries(holdingnuts-server ${Boost_LIBRARIES})
+endif()
+
 INSTALL(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/holdingnuts-server DESTINATION
 	        ${CMAKE_INSTALL_PREFIX}/bin)

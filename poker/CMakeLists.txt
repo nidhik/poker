@@ -2,15 +2,15 @@ cmake_minimum_required (VERSION 2.8)
 
 project (HOLDINGNUTS)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+#set(CMAKE_CXX_STANDARD 11)
 
 # switch features on/off
 option (ENABLE_CLIENT	"Configure for client"		Off)
 option (ENABLE_AUDIO	"Configure client with audio"	Off)
 option (ENABLE_SERVER	"Configure for server"		On)
 option (ENABLE_TEST	"Configure for test-utils"	Off)
-option (ENABLE_DEBUG	"Configure for debug-build"	Off)
+option (ENABLE_DEBUG	"Configure for debug-build"	On)
 
 option (USE_SVNREV "Include the svn-revision in build" Off)
 option (UPDATE_TRANSLATIONS "Update source translations" Off)
