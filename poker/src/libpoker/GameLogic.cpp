@@ -149,7 +149,7 @@ bool GameLogic::isStraight(vector<Card> *allcards, const int suit, vector<Card> 
 	bool is_straight = false;
 	int last_face = -1, count = 0;
 	Card high;
-	
+	// allcards vector is passed in sorted in descending order
 	for (vector<Card>::iterator e = allcards->begin(); e != allcards->end(); e++)
 	{
 		// ignore wrong suit when testing for StraightFlush
@@ -180,6 +180,10 @@ bool GameLogic::isStraight(vector<Card> *allcards, const int suit, vector<Card> 
 	// is an A2345-straight ("wheel")
 	if (count == 4 && (last_face == Card::Two && allcards->front().getFace() == Card::Ace))
 		is_straight = true;
+    
+    // is A6789-straight (in 6 plus holdem the Ace "wraps around" and acts like a five)
+    if (count == 4 && (last_face == Card::Six && allcards->front().getFace() == Card::Ace))
+        is_straight = true;
 	
 	if (is_straight)
 	{
