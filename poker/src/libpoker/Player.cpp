@@ -27,8 +27,14 @@
 using namespace std;
 
 Player::Player()
+:
+client_id(0),
+stake(0),
+stake_before(0),
+sitout(false),
+left(false)
+//hasPostedBlind(false)
 {
 	next_action.valid = false;
 	last_action = Player::None;
-	sitout = false;
 }
