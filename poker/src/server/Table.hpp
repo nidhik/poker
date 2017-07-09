@@ -31,6 +31,7 @@
 #include "CommunityCards.hpp"
 #include "Player.hpp"
 #include "GameLogic.hpp"
+#include "assert.h"
 
 class Seat {
 public:
@@ -41,14 +42,18 @@ public:
     }
     
     Seat(Seat & s) = delete;
-    
+  
+    void operator=(const Seat &x) = delete;
+  
     bool occupied;
     unsigned int seat_no;
     std::shared_ptr<Player> player;
     chips_type bet;
     bool in_round;   // is player involved in current hand?
     bool showcards;  // does the player want to show cards?
+    
     Player * getPlayer() {
+        assert(player != nullptr);
         return player.get();
     }
 };

@@ -282,7 +282,7 @@ void Table::resetLastPlayerActions()
 		if (!seats[i].occupied)
 			continue;
 		
-		seats[i].player->resetLastAction();
+		seats[i].getPlayer()->resetLastAction();
 	}
 }
 

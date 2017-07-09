@@ -34,7 +34,7 @@
 #include "Card.hpp"
 
 #include "game.hpp"
-
+#include "assert.h"
 
 using namespace std;
 
@@ -758,7 +758,7 @@ void GameController::stateBetting(Table *t)
 	bool allowed_action = false;  // is action allowed?
 	bool auto_action = false;
 	
-	Player::PlayerAction action;
+	Player::PlayerAction action = Player::None;
 	chips_type amount = 0;
 	
 	chips_type minimum_bet = determineMinimumBet(t);
@@ -1382,9 +1382,15 @@ void GameController::stateEndRound(Table *t)
         if (!t->seats[i].occupied) {
             continue;
         }
-        
-        if(t->seats[i].player->left) {
+
+        Player *p = t->seats[i].getPlayer();
+      
+        if (p->left) {
             t->seats[i].occupied = false;
+            t->seats[i].player = nullptr;
+            t->seats[i].in_round = false;
+          
+            log_msg("game", "Removed player in seat %d", i);
         }
         
     }
@@ -1496,7 +1502,7 @@ void GameController::start()
     auto it = begin(rndseats);
 	for (unsigned int i=0; i < occupiedSeats.size(); i++)
 	{
-		Seat seat;
+		Seat & seat = t->seats[i];
 		
 		seat.seat_no = i;
 		
@@ -1512,12 +1518,9 @@ void GameController::start()
 				chose_dealer = true;
 			}
             it++;
-		}
-		else
+		} else {
 			seat.occupied = false;
-		
-        t->seats[i] = seat;
-        seat.player = nullptr;
+    }
 	}
 	
 	
@@ -1541,13 +1544,14 @@ void GameController::chooseSeat(Table *t, shared_ptr<Player> p) {
     }
     for (unsigned int i=0; i < max_players; i++)
     {
-        Seat *currentSeatPtr = &(t->seats[i]);
-        if (! currentSeatPtr->occupied) {
-            Seat seat;
-            seat.seat_no = i;
+        Seat & seat = t->seats[i];
+        if (seat.occupied == false) {
             seat.occupied = true;
+            seat.seat_no = i;
             seat.player = p;
-            t->seats[i] = std::move(seat);
+            seat.bet = 0;
+            seat.in_round = false;
+            seat.showcards = false;
             log_msg("game", "Placed player in seat %d", i);
             return;
         }
