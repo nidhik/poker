@@ -584,13 +584,15 @@ void GameController::stateNewRound(Table *t)
 	
 	if (headsup_rule)   // heads-up rule: only 2 players remain, so swap blinds
 	{
-		t->bb = t->getNextPlayer(t->dealer);
+//		t->bb = t->getNextPlayer(t->dealer);
+        t->bb = t->dealer;
 		t->sb = t->getNextPlayer(t->bb);
 	}
 	else
 	{
 		t->sb = t->getNextPlayer(t->dealer);
-		t->bb = t->getNextPlayer(t->sb);
+//		t->bb = t->getNextPlayer(t->sb);
+        t->bb = t->dealer;
 	}
 	
 	// player under the gun
@@ -704,6 +706,25 @@ void GameController::stateBlinds(Table *t)
 	
 	t->seats[t->bb].bet = amount;
 	pBig->stake -= amount;
+    
+    // everyone else puts up same as small blind
+    amount = blind.amount / 2;
+    for (unsigned int i = 0; i < 10; i++)
+    {
+        if (!t->seats[i].occupied)
+            continue;
+        
+        Player *p = t->seats[i].getPlayer();
+        if (p->client_id == pSmall->client_id || p->client_id == pBig->client_id) {
+            continue; // already handled
+        }
+        
+        if (amount > p->stake)
+            amount = p->stake;
+        
+        t->seats[i].bet = amount;
+        p->stake -= amount;
+    }
 	
 	
 	// initialize the player's timeout
