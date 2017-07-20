@@ -120,6 +120,9 @@ bool send_response(socktype sock, bool is_success, int last_msgid, int code=0, c
 	return send_msg(sock, buf);
 }
 
+bool send_game_join_ok(clientcon *client, int code=0, const char *str="") {
+    return send_response(client->sock, true, client->last_msgid, code, str);
+}
 bool send_ok(clientcon *client, int code=0, const char *str="")
 {
 #if 0
@@ -844,8 +847,7 @@ int client_cmd_register(clientcon *client, Tokenizer &t)
 		client->info.name, client->id, gid,
 		g->getPlayerCount(), g->getPlayerMax());
 	
-	
-	send_ok(client);
+    send_game_join_ok(client);
 	
 	return 0;
 }
