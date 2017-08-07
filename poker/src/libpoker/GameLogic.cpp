@@ -341,8 +341,8 @@ const char* HandStrength::getRankingName(Ranking r)
 		"Two Pair",
 		"Three Of A Kind",
 		"Straight",
-		"Flush",
 		"Full House",
+        "Flush",
 		"Four Of A Kind",
 		"Straight Flush"
 	};

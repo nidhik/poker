@@ -41,8 +41,8 @@ public:
 		TwoPair,
 		ThreeOfAKind,
 		Straight,
-		Flush,
 		FullHouse,
+        Flush,
 		FourOfAKind,
 		StraightFlush
 	} Ranking;
