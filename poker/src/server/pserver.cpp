@@ -343,7 +343,8 @@ int main(int argc, char* argv[])
         
         boost::asio::io_service io_service;
         
-        server s(io_service, 40888);
+        std::cerr << "Using port: " << config.getInt("port") << "\n";
+        server s(io_service, config.getInt("port"));
         
         boost::asio::deadline_timer t(io_service, boost::posix_time::seconds(5));
         t.async_wait(boost::bind(scheduleHandleGame,
