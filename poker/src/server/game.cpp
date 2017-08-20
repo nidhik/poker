@@ -1095,7 +1095,7 @@ int client_cmd_create(clientcon *client, Tokenizer &t)
 		{
 			ginfo.blinds_start = Tokenizer::string2int(infoarg);
 			
-			if (ginfo.blinds_start < 5 || ginfo.blinds_start > 200*100)
+			if (ginfo.blinds_start < 2 || ginfo.blinds_start > 200*100)
 				cmderr = true;
 		}
 		else if (infotype == "blinds_factor" && havearg)
